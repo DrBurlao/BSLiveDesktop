@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DjBurlaoMax</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .game-board {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        .note {
+            position: absolute;
+            width: 25%;
+            height: 20px;
+            background-color: blue;
+            border: 1px solid #000;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .note.hit {
+            background-color: green;
+        }
+
+        .note.miss {
+            background-color: red;
+        }
+
+        .hit-line {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background-color: red;
+            bottom: 50px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .key {
+            width: 25%;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 1px solid #000;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .key.red {
+            background-color: red;
+            color: white;
+        }
+
+        .key.blue {
+            background-color: blue;
+            color: white;
+        }
+
+        .key.active {
+            background-color: yellow;
+        }
+
+        .stats {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #444;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .progress-bar .progress {
+            position: absolute;
+            height: 100%;
+            background-color: green;
+            width: 0;
+        }
+
+        .splash-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 24px;
+        }
+
+        .splash-screen.show {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="game-board" id="gameBoard">
+        <div class="hit-line"></div>
+    </div>
+
+    <div class="controls">
+        <div class="key red" id="key1" data-key="0" onclick="handleKeyClick(0)">s</div>
+        <div class="key blue middle" id="key2" data-key="1" onclick="handleKeyClick(1)">d</div>
+        <div class="key blue middle" id="key3" data-key="2" onclick="handleKeyClick(2)">j</div>
+        <div class="key red" id="key4" data-key="3" onclick="handleKeyClick(3)">k</div>
+    </div>
+
+    <div class="stats">
+        <div>Hits: <span id="hitCount">0</span></div>
+        <div>Misses: <span id="missCount">0</span></div>
+        <div>Score: <span id="score">0</span></div>
+    </div>
+</div>
+
+<div class="splash-screen" id="startSplashScreen">
+    <div>Select a Song</div>
+    <input type="file" id="audioFile" accept="audio/mp3">
+    <label for="precision">Select Difficulty:</label>
+    <select id="precision">
+        <option value="low">Low</option>
+        <option value="medium" selected>Medium</option>
+        <option value="high">High</option>
+    </select>
+    <button id="startGame">Start Game</button>
+</div>
+
+<div class="splash-screen" id="endSplashScreen">
+    <div>Game Over</div>
+    <div>Hits: <span id="finalHitCount">0</span></div>
+    <div>Misses: <span id="finalMissCount">0</span></div>
+    <div>Score: <span id="finalScore">0</span></div>
+    <button id="loadAnotherSong">Load Another Song</button>
+</div>
+
+<script>
+const gameBoard = document.getElementById("gameBoard");
+const audioFileInput = document.getElementById("audioFile");
+const startGameButton = document.getElementById("startGame");
+const precisionSelect = document.getElementById("precision");
+const hitCountElem = document.getElementById("hitCount");
+const missCountElem = document.getElementById("missCount");
+const scoreElem = document.getElementById("score");
+const progressBar = document.getElementById("progress");
+const startSplashScreen = document.getElementById("startSplashScreen");
+const endSplashScreen = document.getElementById("endSplashScreen");
+const finalHitCountElem = document.getElementById("finalHitCount");
+const finalMissCountElem = document.getElementById("finalMissCount");
+const finalScoreElem = document.getElementById("finalScore");
+const loadAnotherSongButton = document.getElementById("loadAnotherSong");
+
+let audioContext;
+let analyzer;
+let source;
+let gameRunning = false;
+let notes = [];
+let animationIntervals = [];
+let hitCount = 0;
+let missCount = 0;
+let score = 0;
+let precisionFactor = 1;
+let songDuration = 0;
+
+const noteTravelTime = 2;  // Time it takes for notes to reach the hit line
+let noteSpeed = 1000 / noteTravelTime;  // Falling speed to reach in time
+
+loadAnotherSongButton.addEventListener("click", () => {
+    endSplashScreen.classList.remove("show");
+    resetGame(); // Aquí se llama a la función para reiniciar el juego
+    startSplashScreen.classList.add("show");
+});
+
+startGameButton.addEventListener("click", () => {
+    if (gameRunning) {
+        stopGame();
+    }
+
+    const file = audioFileInput.files[0];
+    if (!file) {
+        alert("Please select an MP3 file.");
+        return;
+    }
+
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const fileReader = new FileReader();
+
+    fileReader.onload = async (event) => {
+        const arrayBuffer = event.target.result;
+        try {
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            source = audioContext.createBufferSource();
+            analyzer = audioContext.createAnalyser();
+
+            source.buffer = audioBuffer;
+            source.connect(analyzer);
+            analyzer.connect(audioContext.destination);
+
+            analyzer.fftSize = 2048;  // FFT size for frequency analysis
+            const bufferLength = analyzer.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            source.start();
+            gameRunning = true;
+            songDuration = audioBuffer.duration;
+
+            // Peak detection to generate notes based on music events
+            const peakDetectionLoop = setInterval(() => {
+                if (!gameRunning) {
+                    clearInterval(peakDetectionLoop);
+                    return;
+                }
+
+                analyzer.getByteFrequencyData(dataArray);
+
+                const currentTime = audioContext.currentTime;
+                const peaks = detectPeaks(dataArray, 180);  // Threshold to detect peaks
+
+                if (peaks.length > 0) {
+                    const lane = Math.floor(Math.random() * 4);  // Random lane
+                    createNote(lane, currentTime);  // Create note with sync timing
+                }
+            }, 135);  // Check peaks every 135 ms
+
+            source.onended = () => {
+                stopGame();  // Stop the game when the audio ends
+                showEndSplashScreen();
+            };
+
+            updateProgressBar();  // Start updating the progress bar
+
+        } catch (error) {
+            console.error("Error decoding audio data:", error);
+        }
+    };
+
+    fileReader.readAsArrayBuffer(file);
+    startSplashScreen.classList.remove("show");
+});
+
+precisionSelect.addEventListener("change", () => {
+    switch (precisionSelect.value) {
+        case "low":
+            precisionFactor = 0.5;
+            break;
+        case "medium":
+            precisionFactor = 1;
+            break;
+        case "high":
+            precisionFactor = 2;
+            break;
+    }
+    noteSpeed = 1000 / (noteTravelTime * precisionFactor);
+});
+
+loadAnotherSongButton.addEventListener("click", () => {
+    endSplashScreen.classList.remove("show");
+    resetGame();
+    startSplashScreen.classList.add("show");
+});
+
+function detectPeaks(dataArray, threshold) {
+    const peaks = [];
+    for (let i = 0; i < dataArray.length; i++) {
+        if (dataArray[i] > threshold) {
+            peaks.push({ index: i, value: dataArray[i] });
+        }
+    }
+    return peaks;
+}
+
+function createNote(lane, creationTime) {
+    const note = document.createElement("div");
+    note.classList.add("note");
+    note.style.left = `${lane * 25}%`;  // Position based on lane
+    note.style.top = `-20px`;  // Start from the top
+
+    if (lane === 0 || lane === 3) {
+        note.classList.add("red");
+    } else {
+        note.classList.add("blue");
+    }
+
+    gameBoard.appendChild(note);
+    notes.push(note);
+
+    let moving = true;
+    let endPos = 550;
+    note.addEventListener("touchend", () => {
+        moving = false;
+    });
+
+    const animationInterval = setInterval(() => {
+        if (!gameRunning) {
+            clearInterval(animationInterval);
+            return;
+        }
+
+        if (moving) {
+            const currentPos = parseInt(note.style.top);
+            const newPos = currentPos + noteSpeed / 60;  // Adjusted speed for sync
+
+            note.style.top = `${newPos}px`;
+
+            if (newPos >= endPos) {
+                moving = false;
+                clearInterval(animationInterval);
+                gameBoard.removeChild(note);
+                notes.splice(notes.indexOf(note), 1);
+                missCount++;
+                updateStats();
+            }
+        }
+    }, 16);  // Approximately 60 FPS
+    animationIntervals.push(animationInterval);  // Store for cleanup
+}
+
+document.addEventListener("keydown", handleKeyPress);
+document.addEventListener("touchstart", handleTouchStart);
+
+function handleKeyPress(event) {
+    if (!gameRunning) return;
+
+    const keyMapping = {
+        's': 0,
+        'd': 1,
+        'j': 2,
+        'k': 3
+    };
+
+    const keyIndex = keyMapping[event.key];
+    if (keyIndex !== undefined) {
+        handleKeyAction(keyIndex);
+    }
+}
+
+function handleTouchStart(event) {
+    if (!gameRunning) return;
+
+    const target = event.target;
+    if (target.classList.contains('key')) {
+        const keyIndex = parseInt(target.getAttribute('data-key'));
+        handleKeyAction(keyIndex);
+    }
+}
+
+function handleKeyAction(keyIndex) {
+    const keyElem = document.querySelector(`.key[data-key="${keyIndex}"]`);
+    keyElem.classList.add('active');
+    setTimeout(() => keyElem.classList.remove('active'), 100);
+
+    let noteHit = false;
+    notes.forEach((note, index) => {
+        const notePosition = parseInt(note.style.top);
+        const lane = parseInt(note.style.left) / 25;
+
+        if (notePosition >= 500 && notePosition <= 600 && lane === keyIndex) {
+            noteHit = true;
+            gameBoard.removeChild(note);
+            notes.splice(index, 1);
+            hitCount++;
+            score += 10; // Increase score by 10 points for each hit
+            note.classList.add('hit'); // Add class to highlight hit
+            setTimeout(() => note.classList.remove('hit'), 200); // Remove class after a while to undo highlight
+            updateStats();
+        }
+    });
+
+    if (!noteHit) {
+        missCount++;
+        updateStats();
+    }
+}
+function resetGame() {
+    hitCount = 0;
+    missCount = 0;
+    score = 0;
+    updateStats(); // Actualizar los elementos de estadísticas
+    progressBar.querySelector(".progress").style.width = "0"; // Restablecer la barra de progreso
+
+    // Detener cualquier intervalo de animación en curso
+    animationIntervals.forEach((interval) => {
+        clearInterval(interval);
+    });
+    animationIntervals = [];
+
+    // Eliminar todas las notas restantes en el tablero
+    notes.forEach((note) => {
+        gameBoard.removeChild(note);
+    });
+    notes = [];
+}
+function handleKeyClick(keyIndex) {
+    if (gameRunning) {
+        handleKeyAction(keyIndex);
+    }
+}
+
+function updateStats() {
+    hitCountElem.textContent = hitCount;
+    missCountElem.textContent = missCount;
+    scoreElem.textContent = score;
+}
+
+function showEndSplashScreen() {
+    finalHitCountElem.textContent = hitCount;
+    finalMissCountElem.textContent = missCount;
+    finalScoreElem.textContent = score;
+    endSplashScreen.classList.add("show");
+}
+
+function stopGame() {
+    gameRunning = false;
+    if (source) {
+        source.stop();
+    }
+    animationIntervals.forEach((interval) => {
+        clearInterval(interval);
+    });
+    animationIntervals = [];
+    notes.forEach((note) => {
+        gameBoard.removeChild(note);
+    });
+    notes = [];
+}
+
+// Update progress bar for the song
+function updateProgressBar() {
+    const currentTime = audioContext.currentTime;
+    const progress = (currentTime / songDuration) * 100;
+    progressBar.querySelector(".progress").style.width = progress + "%";
+
+    if (gameRunning) {
+        requestAnimationFrame(updateProgressBar);
+    }
+}
+
+startSplashScreen.classList.add("show");
+</script>
+
+</body>
+</html>

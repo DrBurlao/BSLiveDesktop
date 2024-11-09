@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BurlaSoft - Cache Editor</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f2f2f2;
+    }
+    #container {
+        width: 80%;
+        max-width: 400px;
+        margin: 0px auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        text-align: center;
+        margin-top: 0;
+        padding: 20px;
+        background-color: #007bff;
+        color: #fff;
+        border-radius: 8px 8px 0 0;
+    }
+    textarea {
+        width: calc(100% - 40px);
+        height: 300px;
+        margin: 9px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 20px;
+        resize: none;
+        font-size: 16px;
+        outline: none;
+    }
+    button {
+        display: block;
+        width: calc(33.33% - 10px);
+        padding: 10px;
+        margin: 0 5px 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        float: left;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    select {
+        width: calc(50% - 20px);
+        margin: 20px 5px;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        outline: none;
+    }
+    .btn-delete {
+        background-color: #dc3545;
+    }
+
+    }
+</style>
+</head>
+<body>
+
+<div id="container">
+    <h1>BurlaSoft Cache Editor</h1>
+    <select id="select-notes" onchange="loadSelectedNote()">
+        <option value="">Select cached file...</option>
+    </select>
+    <textarea id="notepad" placeholder="Write here..."></textarea>
+    <button onclick="saveNote()">Save</button>
+    <button onclick="editNote()">Edit</button>
+    <button onclick="clearNote()">Clear</button>
+    <button class="btn-delete" onclick="deleteNote()">Delete</button>
+    <button class="btn-delete" onclick="deleteAllNotes()">Delete All</button>
+
+
+</div>
+
+<script>
+    function saveNote() {
+        var note = document.getElementById("notepad").value;
+        if (note.trim() !== "") {
+            var select = document.getElementById("select-notes");
+            var option = document.createElement("option");
+            option.text = "Note " + (select.options.length - 1);
+            select.add(option);
+            localStorage.setItem(option.text, note);
+            alert("Note saved successfully.");
+        } else {
+            alert("The note is empty.");
+        }
+    }
+
+    function loadSelectedNote() {
+        var select = document.getElementById("select-notes");
+        var selectedNote = select.options[select.selectedIndex].text;
+        var savedNote = localStorage.getItem(selectedNote);
+        document.getElementById("notepad").value = savedNote;
+    }
+
+    function editNote() {
+        var select = document.getElementById("select-notes");
+        var selectedNote = select.options[select.selectedIndex].text;
+        var note = document.getElementById("notepad").value;
+        if (selectedNote && note.trim() !== "") {
+            localStorage.setItem(selectedNote, note);
+            alert("Note edited successfully.");
+        } else {
+            alert("Please select a note and enter text to edit.");
+        }
+    }
+
+    function clearNote() {
+        document.getElementById("notepad").value = "";
+    }
+
+    function deleteNote() {
+        var select = document.getElementById("select-notes");
+        var selectedNote = select.options[select.selectedIndex].text;
+        localStorage.removeItem(selectedNote);
+        select.remove(select.selectedIndex);
+        clearNote();
+        alert("Note deleted successfully.");
+    }
+
+    function deleteAllNotes() {
+        if (confirm("Are you sure you want to delete all notes?")) {
+            localStorage.clear();
+            var select = document.getElementById("select-notes");
+            select.innerHTML = '<option value="">Select saved note...</option>';
+            clearNote();
+            alert("All notes deleted successfully.");
+        }
+    }
+
+    function changeBackgroundColor() {
+        var color = document.getElementById("background-color").value;
+        document.body.style.backgroundColor = color;
+    }
+
+    function searchText() {
+        var searchText = document.getElementById("search-text").value.toLowerCase();
+        var notes = document.getElementById("select-notes");
+        var found = false;
+        for (var i = 0; i < notes.options.length; i++) {
+            var note = notes.options[i].text.toLowerCase();
+            if (note.includes(searchText)) {
+                notes.selectedIndex = i;
+                loadSelectedNote();
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            alert("Text not found in any note.");
+        }
+    }
+
+    window.onload = function() {
+        var select = document.getElementById("select-notes");
+        for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key !== "selectedNote") {
+                var option = document.createElement("option");
+                option.text = key;
+                select.add(option);
+            }
+        }
+    };
+</script>
+
+</body>
+</html>

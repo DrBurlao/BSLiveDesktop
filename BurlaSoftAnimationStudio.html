@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animación de Personaje con Interfaz Gráfica y Importación de PNG</title>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    #character {
+        width: 100px;
+        height: 100px;
+        background-image: url('idle.png');
+        background-size: cover;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    #controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #f2f2f2;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    #fileInput {
+        display: none;
+    }
+
+    #fileInputLabel {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    #fileInputLabel:hover {
+        background-color: #45a049;
+    }
+
+    #preview {
+        margin-bottom: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .preview-image {
+        width: 50px;
+        height: 50px;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        cursor: pointer;
+    }
+
+    .preview-image:hover {
+        opacity: 0.7;
+    }
+
+    #clearButton {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    #clearButton:hover {
+        background-color: #d32f2f;
+    }
+
+    .frame-speed-slider {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    #animationSettings {
+        margin-top: 20px;
+    }
+
+    #animationSettings input[type="number"] {
+        width: 50px;
+        margin-right: 10px;
+    }
+</style>
+</head>
+<body>
+<div id="character"></div>
+<div id="controls">
+    <label for="fileInput" id="fileInputLabel">Seleccionar Imágenes</label>
+    <input type="file" id="fileInput" accept=".png" multiple>
+    <div id="preview"></div>
+    <button id="clearButton">Limpiar Lista</button>
+    <div id="animationSettings">
+        <label for="animationSpeed">Velocidad de animación global:</label>
+        <input type="number" id="animationSpeed" value="200" min="50">
+        <button id="startButton">Iniciar</button>
+        <button id="stopButton">Detener</button>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    const character = $('#character');
+    const previewContainer = $('#preview');
+    const animationSpeedInput = $('#animationSpeed');
+
+    let animationFrames = ['idle.png']; // Inicialmente solo la imagen de inactividad
+    let frameSpeeds = [200]; // Velocidad de animación predeterminada para cada fotograma
+    let animationInterval;
+    let currentFrame = 0;
+
+    function animateCharacter() {
+        character.css('background-image', `url('${animationFrames[currentFrame]}')`);
+        currentFrame = (currentFrame + 1) % animationFrames.length;
+        setTimeout(animateCharacter, frameSpeeds[currentFrame]);
+    }
+
+    function startAnimation() {
+        if(animationFrames.length > 1) {
+            currentFrame = 0;
+            animateCharacter();
+        } else {
+            alert("Añade al menos una imagen para la animación.");
+        }
+    }
+
+    function stopAnimation() {
+        clearTimeout(animationInterval);
+        character.css('background-image', `url('idle.png')`); // Establece la imagen de inactividad cuando se detiene la animación
+    }
+
+    // Cargar imágenes seleccionadas por el usuario
+    $('#fileInput').change(function(e) {
+        const files = e.target.files;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                const image = $('<img>').attr('src', imageUrl).addClass('preview-image');
+                image.click(function() {
+                    $(this).remove();
+                    const index = animationFrames.indexOf(imageUrl);
+                    if (index !== -1) {
+                        animationFrames.splice(index, 1);
+                        frameSpeeds.splice(index, 1);
+                    }
+                });
+                previewContainer.append(image);
+                animationFrames.push(imageUrl);
+                frameSpeeds.push(200); // Valor predeterminado de velocidad
+                createSlider(animationFrames.length - 1);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Crear un control deslizante para ajustar la velocidad del fotograma
+    function createSlider(index) {
+        const slider = $('<div>').addClass('frame-speed-slider').appendTo(previewContainer);
+        slider.slider({
+            min: 50,
+            max: 1000,
+            value: 200, // Valor predeterminado
+            slide: function(event, ui) {
+                frameSpeeds[index] = ui.value;
+            }
+        });
+    }
+
+    // Limpiar la lista de imágenes
+    $('#clearButton').click(function() {
+        previewContainer.empty();
+        animationFrames = ['idle.png'];
+        frameSpeeds = [200];
+    });
+
+    // Iniciar animación cuando se hace clic en el botón de inicio
+    $('#startButton').click(() => {
+        startAnimation();
+    });
+
+    // Detener animación cuando se hace clic en el botón de detener
+    $('#stopButton').click(() => {
+        stopAnimation();
+    });
+</script>
+</body>
+</html>

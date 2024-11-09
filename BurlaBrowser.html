@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Navegador Web</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        #toolbar {
+            width: 100%;
+            height: 50px;
+            background-color: #444;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            color: #fff;
+        }
+        #address-bar {
+            flex: 1;
+            height: 30px;
+            padding: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #quick-links {
+            font-size: 16px;
+            margin-right: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+        #buttons {
+            display: flex;
+            gap: 10px;
+        }
+        #buttons button {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        #buttons button:hover {
+            color: #ccc;
+        }
+        #tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            padding-left: 10px;
+            overflow-x: auto;
+        }
+        #tabs button {
+            background-color: #333;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #tabs button.active {
+            background-color: #555;
+        }
+        #tabs button:hover {
+            background-color: #555;
+        }
+        #browser-frame {
+            width: 100%;
+            height: calc(100% - 100px);
+            border: none;
+        }
+        #progress-bar-container {
+            width: 100%;
+            height: 5px;
+            background-color: #ddd;
+            display: none;
+        }
+        #progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0;
+        }
+        .context-menu {
+            display: none;
+            position: absolute;
+            background-color: #444;
+            color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .context-menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 10px 0;
+        }
+        .context-menu ul li {
+            padding: 8px 20px;
+            cursor: pointer;
+        }
+        .context-menu ul li:hover {
+            background-color: #555;
+        }
+        #favorites {
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+        #favorites ul {
+            list-style: none;
+            padding: 0;
+        }
+        #favorites ul li {
+            padding: 5px;
+            background-color: #333;
+            color: #fff;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #favorites ul li button {
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #favorites ul li button:hover {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <input type="text" id="address-bar" placeholder="Enter URL">
+        <select id="quick-links" onchange="loadQuickLink(this.value)">
+            <option value="">Quick Links</option>
+            <option value="https://www.wikipedia.org">Wikipedia</option>
+            <option value="https://www.nationalgeographic.com">National Geographic</option>
+            <option value="https://www.wired.com">Wired</option>
+            <option value="https://www.economist.com">The Economist</option>
+            <option value="https://www.nasa.gov">NASA</option>
+            <option value="https://www.pexels.com">Pexels</option>
+            <option value="https://www.codecademy.com">Codecademy</option>
+            <option value="https://www.lifehacker.com">Lifehacker</option>
+            <option value="https://www.androidauthority.com">Android Authority</option>
+            <option value="https://www.techrepublic.com">TechRepublic</option>
+            <option value="https://www.pcmag.com">PCMag</option>
+            <option value="https://www.cnet.com">CNET</option>
+            <option value="https://www.guidingtech.com">Guiding Tech</option>
+            <option value="https://www.theatlantic.com">The Atlantic</option>
+            <option value="https://www.gamespot.com">GameSpot</option>
+        </select>
+        <div id="buttons">
+            <button onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+            <button onclick="goForward()"><i class="fas fa-arrow-right"></i></button>
+            <button onclick="reload()"><i class="fas fa-sync"></i></button>
+            <button onclick="openInNewTab()"><i class="fas fa-external-link-alt"></i></button>
+            <button onclick="addFavorite()"><i class="fas fa-star"></i></button>
+        </div>
+    </div>
+    <div id="tabs"></div>
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+    <iframe id="browser-frame"></iframe>
+    <div id="favorites">
+        <h3>Favorites</h3>
+        <ul id="favorites-list"></ul>
+    </div>
+    <div class="context-menu" id="context-menu">
+        <ul>
+            <li onclick="addTab()">New Tab</li>
+            <li onclick="reload()">Reload</li>
+            <li onclick="openInNewTab()">Open in New Window</li>
+            <li onclick="removeTab()">Close Tab</li>
+        </ul>
+    </div>
+
+    <script>
+        const addressBar = document.getElementById('address-bar');
+        const browserFrame = document.getElementById('browser-frame');
+        const progressBarContainer = document.getElementById('progress-bar-container');
+        const progressBar = document.getElementById('progress-bar');
+        const contextMenu = document.getElementById('context-menu');
+        const favoritesList = document.getElementById('favorites-list');
+        let currentTab = 0;
+        let tabs = [];
+        let favorites = [];
+
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            contextMenu.style.top = `${e.clientY}px`;
+            contextMenu.style.left = `${e.clientX}px`;
+            contextMenu.style.display = 'block';
+        });
+
+        document.addEventListener('click', function() {
+            contextMenu.style.display = 'none';
+        });
+
+        function goBack() {
+            if (browserFrame.contentWindow.history.length > 0) {
+                browserFrame.contentWindow.history.back();
+            }
+        }
+
+        function goForward() {
+            if (browserFrame.contentWindow.history.length > 1) {
+                browserFrame.contentWindow.history.forward();
+            }
+        }
+
+        function reload() {
+            progressBarContainer.style.display = 'block';
+            browserFrame.contentWindow.location.reload();
+        }
+
+        function openInNewTab() {
+            const url = addressBar.value.trim();
+            if (url !== '') {
+                window.open(url, '_blank');
+            }
+        }
+
+        function addTab(url) {
+            const newTabIndex = tabs.length;
+            const newTabButton = document.createElement('button');
+            newTabButton.classList.add('tab-button');
+            newTabButton.addEventListener('click', () => changeTab(newTabIndex));
+            newTabButton.id = `tab-${newTabIndex}`;
+            tabs.push({ url });
+            document.getElementById('tabs').appendChild(newTabButton);
+            updateTab(newTabIndex, url);
+            changeTab(newTabIndex);
+        }
+
+        function removeTab() {
+            if (tabs.length <= 1) return;
+            const currentTabButton = document.getElementById(`tab-${currentTab}`);
+            currentTabButton.remove();
+            tabs.splice(currentTab, 1);
+            changeTab(Math.max(0, currentTab - 1));
+        }
+
+        function changeTab(index) {
+            currentTab = index;
+            loadTab(index);
+            document.querySelectorAll('.tab-button').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === index);
+            });
+        }
+
+        function loadTab(index) {
+            const tab = tabs[index];
+            if (tab.url !== '') {
+                progressBarContainer.style.display = 'block';
+                browserFrame.src = tab.url;
+            }
+        }
+
+        function saveTabs() {
+            localStorage.setItem('tabs', JSON.stringify(tabs));
+        }
+
+        function restoreTabs() {
+            const savedTabs = localStorage.getItem('tabs');
+            if (savedTabs) {
+                tabs = JSON.parse(savedTabs);
+                tabs.forEach((tab, index) => {
+                    const newTabButton = document.createElement('button');
+                    newTabButton.classList.add('tab-button');
+                    newTabButton.addEventListener('click', () => changeTab(index));
+                    newTabButton.id = `tab-${index}`;
+                    document.getElementById('tabs').appendChild(newTabButton);
+                    updateTab(index, tab.url);
+                });
+                changeTab(0);
+            }
+        }
+
+        function loadQuickLink(url) {
+            if (url) {
+                const existingTab = tabs.findIndex(tab => tab.url === url);
+                if (existingTab === -1) {
+                    addTab(url);
+                } else {
+                    changeTab(existingTab);
+                }
+            }
+        }
+
+        function addFavorite() {
+            const url = addressBar.value.trim();
+            if (url !== '' && !favorites.includes(url)) {
+                favorites.push(url);
+                saveFavorites();
+                renderFavorites();
+            }
+        }
+
+        function removeFavorite(url) {
+            favorites = favorites.filter(fav => fav !== url);
+            saveFavorites();
+            renderFavorites();
+        }
+
+        function saveFavorites() {
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        function restoreFavorites() {
+            const savedFavorites = localStorage.getItem('favorites');
+            if (savedFavorites) {
+                favorites = JSON.parse(savedFavorites);
+                renderFavorites();
+            }
+        }
+
+        function renderFavorites() {
+            favoritesList.innerHTML = '';
+            favorites.forEach(url => {
+                const li = document.createElement('li');
+                li.innerText = url;
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                removeBtn.addEventListener('click', () => removeFavorite(url));
+                li.appendChild(removeBtn);
+                favoritesList.appendChild(li);
+            });
+        }
+
+        function updateTab(index, url) {
+            fetch(`https://www.google.com/s2/favicons?domain=${new URL(url).hostname}`)
+                .then(response => response.blob())
+                .then(blob => {
+                    const iconUrl = URL.createObjectURL(blob);
+                    const tabButton = document.getElementById(`tab-${index}`);
+                    tabButton.innerHTML = `<img src="${iconUrl}" style="width:16px;height:16px;"> ${new URL(url).hostname}`;
+                });
+        }
+
+        addressBar.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const url = addressBar.value.trim();
+                if (url !== '') {
+                    const existingTab = tabs.findIndex(tab => tab.url === url);
+                    if (existingTab === -1) {
+                        addTab(url);
+                    } else {
+                        changeTab(existingTab);
+                    }
+                }
+            }
+        });
+
+        browserFrame.addEventListener('load', function() {
+            addressBar.value = browserFrame.contentWindow.location.href;
+            progressBarContainer.style.display = 'none';
+            tabs[currentTab].url = browserFrame.contentWindow.location.href;
+            saveTabs();
+            updateTab(currentTab, browserFrame.contentWindow.location.href);
+        });
+
+        browserFrame.addEventListener('loadstart', function() {
+            progressBarContainer.style.display = 'block';
+        });
+
+        browserFrame.addEventListener('progress', function(event) {
+            if (event.lengthComputable) {
+                const progress = (event.loaded / event.total) * 100;
+                progressBar.style.width = progress + '%';
+            }
+        });
+
+        restoreTabs();
+        restoreFavorites();
+        loadTab(currentTab);
+    </script>
+</body>
+</html>

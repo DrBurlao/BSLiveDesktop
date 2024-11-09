@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Juegos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('fondo.png');
+            background-size: cover;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.1); /* Cambio de tamaño al hacer hover */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para el botón de volver al menú principal */
+        #backToMenuButton {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #f44336; /* Color rojo */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 999; /* Asegurar que esté sobre los otros elementos */
+        }
+
+        #backToMenuButton:hover {
+            background-color: #d32f2f; /* Color rojo oscuro al hacer hover */
+        }
+
+        /* Estilos para el frame */
+        .fullscreenFrame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: white;
+            z-index: 998; /* Por debajo del botón de volver al menú principal */
+            display: none; /* Ocultar el frame inicialmente */
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Sombra para resaltar el frame */
+            padding: 10px; /* Espaciado interno para el contenido */
+            overflow: auto; /* Agregar scroll si es necesario */
+        }
+
+        /* Estilos para el contenido del frame */
+        .frameContent {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DjBurlaoMax</h1>
+        <button onclick="startGame()">Start</button>
+        <button onclick="showOptions()">Options</button>
+        <button onclick="openStore()">Shop</button>
+        <button onclick="viewScores()">Ranks</button>
+        <button onclick="openPrivacyPolicy()">Privacy Policy</button>
+    </div>
+
+    <!-- Botón para volver al menú principal -->
+    <button id="backToMenuButton" onclick="backToMenu()">Main Menu</button>
+
+    <!-- Frame para mostrar el contenido -->
+    <iframe class="fullscreenFrame" id="contentFrame"></iframe>
+
+    <script>
+        function startGame() {
+            openFrame("DjBurlao.html");
+        }
+
+        function showOptions() {
+            openFrame("Options.html");
+        }
+
+        function openStore() {
+            openFrame("Shop.html");
+        }
+
+        function viewScores() {
+            openFrame("Ranks.html");
+        }
+
+        function openPrivacyPolicy() {
+            openFrame("PrivacyPolicy.html");
+        }
+
+        function openFrame(url) {
+            var frame = document.getElementById("contentFrame");
+            frame.src = url;
+            frame.style.display = "block"; // Mostrar el frame
+        }
+
+        function backToMenu() {
+            // Ocultar el frame y mostrar los botones del menú principal
+            document.getElementById("contentFrame").style.display = "none";
+            document.querySelectorAll(".container button").forEach(function(btn) {
+                btn.style.display = "block";
+            });
+        }
+    </script>
+</body>
+</html>

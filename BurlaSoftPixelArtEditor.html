@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BurlaSoft - PixelArt Editor</title>
+<style>
+    canvas {
+        border: 1px solid black;
+        cursor: crosshair;
+    }
+    .color-box {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+    }
+    .selected {
+        border: 2px solid black;
+    }
+    .transparent-box {
+        background: repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 50% / 10px 10px;
+    }
+</style>
+</head>
+<body>
+<h2>BurlaSoft - PixelArt Editor</h2>
+<label for="width">Canvas width:</label>
+<input type="number" id="width" value="256" min="16" max="1024" onchange="updateResolution()">
+<label for="height">Canvas height:</label>
+<input type="number" id="height" value="256" min="16" max="1024" onchange="updateResolution()">
+<br>
+<label for="color">Color palette:</label>
+<div id="colorPalette">
+    <div class="color-box selected" style="background-color: black;" onclick="setColor('black')"></div>
+    <div class="color-box" style="background-color: white;" onclick="setColor('white')"></div>
+    <div class="color-box" style="background-color: red;" onclick="setColor('red')"></div>
+    <div class="color-box" style="background-color: green;" onclick="setColor('green')"></div>
+    <div class="color-box" style="background-color: blue;" onclick="setColor('blue')"></div>
+    <div class="color-box transparent-box" onclick="setColor('transparent')"></div>
+    <input type="color" id="customColor" onchange="addCustomColor(this.value)">
+</div>
+<br>
+<label for="tool">Tools:</label>
+<select id="tool" onchange="selectTool()">
+    <option value="draw">Draw</option>
+    <option value="erase">Erase</option>
+    <option value="eyedropper">Color picker</option>
+    <option value="fill">Filler</option>
+</select>
+<br>
+<label for="lineWidth">Line width:</label>
+<input type="number" id="lineWidth" value="1" min="1" max="10" onchange="updateLineWidth()">
+<br>
+<label for="projectName">Project's name:</label>
+<input type="text" id="projectName" placeholder="Project's name">
+<br>
+<canvas id="canvas" width="256" height="256"></canvas>
+<br>
+<input type="file" id="importFile" style="display: none;" accept="image/png" onchange="importImage(event)">
+<button onclick="document.getElementById('importFile').click()">Import Image</button>
+<button onclick="saveImage()">Save Picture</button>
+<button onclick="clearCanvas()">Clean Canvas</button>
+<button onclick="saveProject()">Save project</button>
+<label for="projectList">Load Project:</label>
+<select id="projectList" onchange="loadSelectedProject()">
+    <option value="" disabled selected>Select a project</option>
+</select>
+<button onclick="clearStorage()">Delete data</button>
+<button onclick="resetProgram()">Factory Reset</button>
+<button onclick="undo()">Undo</button>
+<button onclick="redo()">Redo</button>
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let gridSize = 16;
+    let width = 256;
+    let height = 256;
+    let currentColor = 'black';
+    let currentTool = 'draw';
+    let lineWidth = 1;
+    let pixels = [];
+    let history = [];
+    let historyStep = -1;
+
+    function initPixels() {
+        pixels = Array.from({ length: height / gridSize }, () =>
+            Array(width / gridSize).fill(null)
+        );
+        history = [];
+        historyStep = -1;
+        saveState();
+    }
+
+    function updateResolution() {
+        width = parseInt(document.getElementById('width').value);
+        height = parseInt(document.getElementById('height').value);
+        canvas.width = width;
+        canvas.height = height;
+        initPixels();
+        redrawPixels();
+    }
+
+    function setColor(color) {
+        currentColor = color;
+        document.querySelectorAll('.color-box').forEach(box => {
+            box.classList.remove('selected');
+            if (color === 'transparent') {
+                if (box.classList.contains('transparent-box')) {
+                    box.classList.add('selected');
+                }
+            } else if (box.style.backgroundColor === color) {
+                box.classList.add('selected');
+            }
+        });
+    }
+
+    function addCustomColor(color) {
+        const colorBox = document.createElement('div');
+        colorBox.className = 'color-box';
+        colorBox.style.backgroundColor = color;
+        colorBox.onclick = () => setColor(color);
+        document.getElementById('colorPalette').appendChild(colorBox);
+        setColor(color);
+    }
+
+    function selectTool() {
+        currentTool = document.getElementById('tool').value;
+    }
+
+    function updateLineWidth() {
+        lineWidth = parseInt(document.getElementById('lineWidth').value);
+    }
+
+    function saveImage() {
+        const dataURL = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.download = 'sprite.png';
+        link.href = dataURL;
+        link.click();
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        initPixels();
+    }
+
+    function saveProject() {
+        const projectName = document.getElementById('projectName').value;
+        if (!projectName) {
+            alert('Please enter a name for the project.');
+            return;
+        }
+        const project = {
+            pixels,
+            width,
+            height,
+            gridSize,
+            history,
+            historyStep
+        };
+        localStorage.setItem(projectName, JSON.stringify(project));
+        addProjectToList(projectName);
+        alert('Project saved!');
+    }
+
+    function loadSelectedProject() {
+        const projectName = document.getElementById('projectList').value;
+        const project = JSON.parse(localStorage.getItem(projectName));
+        if (project) {
+            pixels = project.pixels;
+            width = project.width;
+            height = project.height;
+            gridSize = project.gridSize;
+            history = project.history;
+            historyStep = project.historyStep;
+            document.getElementById('width').value = width;
+            document.getElementById('height').value = height;
+            canvas.width = width;
+            canvas.height = height;
+            redrawPixels();
+            alert('Project loaded!');
+        } else {
+            alert('The project could not be loaded.');
+        }
+    }
+
+    function clearStorage() {
+        const confirmed = confirm('¿Are you sure you want to delete all saved data??');
+        if (confirmed) {
+            localStorage.clear();
+            updateProjectList();
+            alert('Data deleted!');
+        }
+    }
+
+    function resetProgram() {
+        clearCanvas();
+        clearStorage();
+        document.getElementById('width').value = 256;
+        document.getElementById('height').value = 256;
+        document.getElementById('lineWidth').value = 1;
+        document.getElementById('projectName').value = '';
+        setColor('black');
+        selectTool();
+        updateProjectList();
+    }
+
+    function saveState() {
+        history = history.slice(0, historyStep + 1);
+        history.push(JSON.parse(JSON.stringify(pixels)));
+        historyStep++;
+    }
+
+    function undo() {
+        if (historyStep > 0) {
+            historyStep--;
+            pixels = JSON.parse(JSON.stringify(history[historyStep]));
+            redrawPixels();
+        }
+    }
+
+    function redo() {
+        if (historyStep < history.length - 1) {
+            historyStep++;
+            pixels = JSON.parse(JSON.stringify(history[historyStep]));
+            redrawPixels();
+        }
+    }
+
+    function draw(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / gridSize);
+        const y = Math.floor((e.clientY - rect.top) / gridSize);
+        if (x >= 0 && x < width / gridSize && y >= 0 && y < height / gridSize) {
+            if (currentTool === 'draw') {
+                ctx.fillStyle = currentColor === 'transparent' ? 'rgba(0,0,0,0)' : currentColor;
+                ctx.clearRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                if (currentColor !== 'transparent') {
+                    ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                }
+                pixels[y][x] = currentColor;
+                saveState();
+            } else if (currentTool === 'erase') {
+                ctx.clearRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                pixels[y][x] = null;
+                saveState();
+            } else if (currentTool === 'eyedropper') {
+                const pixelColor = ctx.getImageData(x * gridSize, y * gridSize, 1, 1).data;
+                const rgbaColor = `rgba(${pixelColor[0]}, ${pixelColor[1]}, ${pixelColor[2]}, ${pixelColor[3] / 255})`;
+                setColor(rgbaColor);
+            } else if (currentTool === 'fill') {
+                const targetColor = pixels[y][x];
+                floodFill(x, y, targetColor, currentColor);
+                saveState();
+            }
+        }
+    }
+
+    function floodFill(x, y, targetColor, replacementColor) {
+        if (targetColor === replacementColor) return;
+        if (pixels[y][x] !== targetColor) return;
+
+        const stack = [[x, y]];
+        while (stack.length) {
+            const [currentX, currentY] = stack.pop();
+            if (pixels[currentY][currentX] === targetColor) {
+                pixels[currentY][currentX] = replacementColor;
+                ctx.fillStyle = replacementColor === 'transparent' ? 'rgba(0,0,0,0)' : replacementColor;
+                ctx.clearRect(currentX * gridSize, currentY * gridSize, gridSize, gridSize);
+                if (replacementColor !== 'transparent') {
+                    ctx.fillRect(currentX * gridSize, currentY * gridSize, gridSize, gridSize);
+                }
+
+                if (currentX > 0) stack.push([currentX - 1, currentY]);
+                if (currentX < width / gridSize - 1) stack.push([currentX + 1, currentY]);
+                if (currentY > 0) stack.push([currentX, currentY - 1]);
+                if (currentY < height / gridSize - 1) stack.push([currentX, currentY + 1]);
+            }
+        }
+    }
+
+    function redrawPixels() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let y = 0; y < pixels.length; y++) {
+            for (let x = 0; x < pixels[y].length; x++) {
+                if (pixels[y][x]) {
+                    ctx.fillStyle = pixels[y][x] === 'transparent' ? 'rgba(0,0,0,0)' : pixels[y][x];
+                    ctx.clearRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    if (pixels[y][x] !== 'transparent') {
+                        ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+    }
+
+    function addProjectToList(projectName) {
+        const projectList = document.getElementById('projectList');
+        const option = document.createElement('option');
+        option.value = projectName;
+        option.textContent = projectName;
+        projectList.appendChild(option);
+    }
+
+    function updateProjectList() {
+        const projectList = document.getElementById('projectList');
+        projectList.innerHTML = '<option value="" disabled selected>Select a project</option>';
+        for (let i = 0; i < localStorage.length; i++) {
+            const projectName = localStorage.key(i);
+            addProjectToList(projectName);
+        }
+    }
+
+    function importImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                for (let y = 0; y < height / gridSize; y++) {
+                    for (let x = 0; x < width / gridSize; x++) {
+                        const imageData = ctx.getImageData(x * gridSize, y * gridSize, gridSize, gridSize);
+                        const [r, g, b, a] = imageData.data;
+                        if (a === 0) {
+                            pixels[y][x] = 'transparent';
+                        } else {
+                            pixels[y][x] = `rgba(${r},${g},${b},${a / 255})`;
+                        }
+                    }
+                }
+                saveState();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    canvas.addEventListener('mousedown', function(e) {
+        isDrawing = true;
+        draw(e);
+    });
+
+    canvas.addEventListener('mousemove', function(e) {
+        if (isDrawing) {
+            draw(e);
+        }
+    });
+
+    canvas.addEventListener('mouseup', function() {
+        isDrawing = false;
+    });
+
+    canvas.addEventListener('touchstart', function(e) {
+        isDrawing = true;
+        draw(e.touches[0]);
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchmove', function(e) {
+        if (isDrawing) {
+            draw(e.touches[0]);
+        }
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('touchend', function() {
+        isDrawing = false;
+    });
+
+    initPixels();
+    updateProjectList();
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Player</title>
+  <style>
+    body {
+      background-color: #333;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    #player {
+      width: 100%;
+      height: 400px;
+      margin-bottom: 20px;
+    }
+    #videoInput, #nameInput {
+      width: calc(50% - 50px);
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    #addButton, #playButton, #deleteButton {
+      width: 100px;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #555;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    #addButton:hover, #playButton:hover, #deleteButton:hover {
+      background-color: #777;
+    }
+    #urlsDropdown {
+      width: calc(50% - 50px);
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <input type="text" id="videoInput" placeholder="Video ID or URL">
+  <input type="text" id="nameInput" placeholder="Custom Name">
+  <button id="addButton">Add</button>
+  <button id="playButton">Play</button>
+  <button id="deleteButton">Delete</button>
+  <select id="urlsDropdown"></select>
+  <div id="player"></div>
+
+  <script>
+    var addButton = document.getElementById('addButton');
+    var playButton = document.getElementById('playButton');
+    var deleteButton = document.getElementById('deleteButton');
+    var playerDiv = document.getElementById('player');
+    var videoInput = document.getElementById('videoInput');
+    var nameInput = document.getElementById('nameInput');
+    var urlsDropdown = document.getElementById('urlsDropdown');
+    var urls = JSON.parse(localStorage.getItem('urls')) || {};
+
+    // Load saved URLs on page load
+    loadUrls();
+
+    addButton.addEventListener('click', function() {
+      var input = videoInput.value.trim();
+      if (input) {
+        var videoId = getVideoId(input);
+        if (videoId) {
+          var name = nameInput.value.trim() || videoId;
+          addUrl(videoId, name);
+          videoInput.value = ''; // Clear input field after adding URL
+          nameInput.value = ''; // Clear name field after adding URL
+          saveUrls();
+        } else {
+          alert('Please enter a valid video ID or YouTube URL.');
+        }
+      } else {
+        alert('Please enter a video ID or YouTube URL.');
+      }
+    });
+
+    playButton.addEventListener('click', function() {
+      var selectedUrl = urlsDropdown.value;
+      if (selectedUrl) {
+        var videoId = urls[selectedUrl];
+        loadVideo(videoId);
+      } else {
+        alert('Please select a URL from the list to play.');
+      }
+    });
+
+    deleteButton.addEventListener('click', function() {
+      var selectedUrl = urlsDropdown.value;
+      if (selectedUrl) {
+        deleteUrl(selectedUrl);
+        saveUrls();
+      } else {
+        alert('Please select a URL from the list to delete.');
+      }
+    });
+
+    function getVideoId(input) {
+      // If the input is a YouTube URL, extract the video ID
+      var regex = /[?&]v=([^&#]*)/;
+      var match = input.match(regex);
+      if (match && match[1]) {
+        return match[1];
+      } else {
+        // If the input is just the video ID
+        return input;
+      }
+    }
+
+    function addUrl(videoId, name) {
+      urls[name] = videoId;
+      loadUrls();
+    }
+
+    function deleteUrl(name) {
+      delete urls[name];
+      loadUrls();
+    }
+
+    function loadUrls() {
+      urlsDropdown.innerHTML = '';
+      Object.keys(urls).forEach(function(name) {
+        var option = document.createElement('option');
+        option.text = name;
+        urlsDropdown.add(option);
+      });
+    }
+
+    function loadVideo(videoId) {
+      playerDiv.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + videoId + '?autoplay=1" frameborder="0" allowfullscreen></iframe>';
+    }
+
+    function saveUrls() {
+      localStorage.setItem('urls', JSON.stringify(urls));
+    }
+  </script>
+</body>
+</html>

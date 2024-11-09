@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three In A Row User Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #007bff; /* Cambiado el color de los encabezados a azul */
+        }
+        ol {
+            text-align: left;
+            padding-left: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50; /* Cambiado el color del fondo del botón */
+            color: white; /* Cambiado el color del texto del botón a blanco */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añadido un sombreado al botón */
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Three In A Row</h1>
+        <p>Three In A Row is a simple tic-tac-toe game where you compete against the computer. Follow these steps to play Three In A Row:</p>
+        
+        <h2>How to Play:</h2>
+        <ol>
+            <li><strong>Make Your Move:</strong> Click on any empty cell on the game board to place your 'X'.</li>
+            <li><strong>Winning Condition:</strong> Try to align three of your symbols ('X') either horizontally, vertically, or diagonally.</li>
+            <li><strong>Defeat the CPU:</strong> The computer ('O') will make its move after you. Defeat it by strategically placing your symbols.</li>
+            <li><strong>Restart the Game:</strong> If you want to start over, click the "Restart Game" button.</li>
+        </ol>
+        
+    </div>
+    
+    <script>
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

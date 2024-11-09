@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BurlaSoft - Light Audio Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General page styles */
+        body {
+            background: linear-gradient(to bottom, #000000, #333333);
+            font-family: 'Verdana', sans-serif;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            text-align: center; /* Center align text */
+        }
+        .content {
+            padding: 15px; /* Reduced padding */
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            box-shadow: 5px 5px 15px #000000;
+            display: inline-block; /* Center content */
+            margin-top: 20px; /* Reduced margin */
+            width: 90%; /* Adjusted width */
+            max-width: 500px; /* Max width */
+        }
+        .audio-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, #1f1f1f, #3f3f3f);
+            padding: 15px; /* Reduced padding */
+            border-radius: 10px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex: 1; /* Flex for equal spacing */
+            margin: 0 5px; /* Margin between buttons */
+        }
+        button:hover {
+            background: #0056b3; /* Hover color */
+        }
+        .volume-control, .equalizer-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .slider {
+            width: 100%;
+            background: linear-gradient(to right, #007BFF, #00CFFF);
+            border-radius: 10px; /* Rounded slider */
+        }
+        .equalizer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            height: 100px; /* Reduced equalizer height */
+            background: #000;
+            border-radius: 5px; /* Rounded edges */
+            overflow: hidden; /* Prevent bars from overflowing */
+        }
+        .bar {
+            width: 2%; /* Width of each bar */
+            transition: height 0.2s; /* Smooth transition */
+            background: #007BFF;
+        }
+        .playlist {
+            width: 100%;
+            text-align: left;
+            list-style: none; /* No bullets */
+            padding: 0;
+            margin: 0;
+        }
+        .playlist-item {
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .playlist-item.active {
+            background: #007BFF; /* Active item color */
+            color: white; /* White text */
+        }
+        .playlist-item:hover {
+            background: #e0e0e0; /* Hover color */
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h2>BurlaSoft Audio Player</h2>
+        <div class="audio-player">
+            <button onclick="document.getElementById('file-input').click()">
+                Load Audio Files
+            </button>
+            <input type="file" id="file-input" accept="audio/*" multiple onchange="loadFiles()" style="display: none;" />
+            <div class="equalizer-control">
+                <label>Low:</label>
+                <input type="range" min="-10" max="10" step="1" value="0" id="eq-low" class="slider" onchange="setFilterValues()" />
+            </div>
+            <div class="equalizer-control">
+                <label>Mid:</label>
+                <input type="range" min="-10" max="10" step="1" value="0" id="eq-mid" class="slider" onchange="setFilterValues()" />
+            </div>
+            <div class="equalizer-control">
+                <label>High:</label>
+                <input type="range" min="-10" max="10" step="1" value="0" id="eq-high" class="slider" onchange="setFilterValues()" />
+            </div>
+            <div id="equalizer" class="equalizer"></div>
+            <div class="volume-control">
+                Volume:
+                <input type="range" min="0" max="1" step="0.1" id="volume" class="slider" onchange="adjustVolume()" value="1">
+            </div>
+            <div class="button-row">
+                <button onclick="rewind()"><i class="fas fa-backward"></i></button>
+                <button onclick="playPause()"><i class="fas fa-play"></i></button>
+                <button onclick="skip()"><i class="fas fa-forward"></i></button>
+                <button onclick="toggleShuffle()"><i id="shuffle-icon" class="fas fa-random"></i></button>
+                <button onclick="muteUnmute()"><i class="fas fa-volume-mute"></i></button>
+            </div>
+            <ul class="playlist" id="playlist"></ul>
+        </div>
+    </div>
+    <audio id="my-audio"></audio>
+    <script>
+        const audio = document.getElementById("my-audio");
+        const equalizer = document.getElementById("equalizer");
+        const volumeControl = document.getElementById("volume");
+        const playlist = document.getElementById("playlist");
+
+        let audioCtx;
+        let source;
+        let analyser;
+        let dataArray;
+        let filters = [];
+        let currentTrack = 0;
+        let files = [];
+        let shuffle = false;
+
+        function initializeAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                source = audioCtx.createMediaElementSource(audio);
+
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 512;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                filters = [
+                    audioCtx.createBiquadFilter(),
+                    audioCtx.createBiquadFilter(),
+                    audioCtx.createBiquadFilter()
+                ];
+
+                filters[0].type = "lowshelf";
+                filters[1].type = "peaking";
+                filters[2].type = "highshelf";
+
+                source.connect(filters[0]);
+                filters[0].connect(filters[1]);
+                filters[1].connect(filters[2]);
+                filters[2].connect(analyser);
+                analyser.connect(audioCtx.destination);
+
+                drawEqualizer();
+                restoreSettings();
+            }
+        }
+
+        function drawEqualizer() {
+            requestAnimationFrame(drawEqualizer);
+
+            if (analyser) {
+                analyser.getByteFrequencyData(dataArray);
+                equalizer.innerHTML = "";
+
+                const barCount = 40;
+                const barWidth = equalizer.clientWidth / barCount;
+
+                for (let i = 0; i < barCount; i++) {
+                    const barHeight = Math.min(equalizer.clientHeight, dataArray[i] * 0.40);
+                    const bar = document.createElement("div");
+                    bar.className = "bar";
+                    bar.style.width = `${barWidth}px`;
+                    bar.style.height = `${barHeight}px`;
+                    bar.style.backgroundColor = `rgb(${255 - barHeight}, ${barHeight}, 200)`;
+
+                    equalizer.appendChild(bar);
+                }
+            }
+        }
+
+        function playPause() {
+            if (!audioCtx) {
+                initializeAudioContext();
+            }
+
+            if (audio.paused) {
+                audioCtx.resume();
+                audio.play();
+                document.querySelector('button[onclick="playPause()"] i').className = "fas fa-pause";
+            } else {
+                audio.pause();
+                document.querySelector('button[onclick="playPause()"] i').className = "fas fa-play";
+            }
+        }
+
+        function rewind() {
+            audio.currentTime -= 10;
+        }
+
+        function skip() {
+            if (shuffle) {
+                currentTrack = Math.floor(Math.random() * files.length);
+            } else {
+                currentTrack++;
+                if (currentTrack >= files.length) {
+                    currentTrack = 0;
+                }
+            }
+            loadCurrentTrack();
+        }
+
+        function toggleShuffle() {
+            shuffle = !shuffle;
+            document.getElementById('shuffle-icon').classList.toggle('active', shuffle);
+        }
+
+        function muteUnmute() {
+            audio.muted = !audio.muted;
+            document.querySelector('button[onclick="muteUnmute()"] i').className = audio.muted ? "fas fa-volume-mute" : "fas fa-volume-up";
+        }
+
+        function adjustVolume() {
+            audio.volume = volumeControl.value;
+        }
+
+        function loadFiles() {
+            const fileInput = document.getElementById("file-input");
+            files = Array.from(fileInput.files);
+            currentTrack = 0;
+            updatePlaylist();
+            loadCurrentTrack();
+        }
+
+        function updatePlaylist() {
+            playlist.innerHTML = "";
+            files.forEach((file, index) => {
+                const listItem = document.createElement("li");
+                listItem.className = "playlist-item";
+                listItem.textContent = file.name;
+                listItem.onclick = () => {
+                    currentTrack = index;
+                    loadCurrentTrack();
+                };
+
+                if (index === currentTrack) {
+                    listItem.classList.add("active");
+                    listItem.style.color = "white";
+                }
+
+                playlist.appendChild(listItem);
+            });
+        }
+
+        function loadCurrentTrack() {
+            const currentFile = files[currentTrack];
+            const objectURL = URL.createObjectURL(currentFile);
+
+            audio.src = objectURL;
+            audio.load();
+            playPause();
+
+            Array.from(playlist.children).forEach((item, index) => {
+                item.classList.remove("active");
+                if (index === currentTrack) {
+                    item.classList.add("active");
+                    item.style.color = "white";
+                }
+            });
+            saveSettings();
+        }
+
+        function saveSettings() {
+            localStorage.setItem('currentTrack', currentTrack);
+            localStorage.setItem('volume', audio.volume);
+            localStorage.setItem('eqLow', document.getElementById('eq-low').value);
+            localStorage.setItem('eqMid', document.getElementById('eq-mid').value);
+            localStorage.setItem('eqHigh', document.getElementById('eq-high').value);
+        }
+
+        function restoreSettings() {
+            currentTrack = parseInt(localStorage.getItem('currentTrack'), 10) || 0;
+            audio.volume = parseFloat(localStorage.getItem('volume')) || 1;
+            document.getElementById('eq-low').value = parseInt(localStorage.getItem('eqLow'), 10) || 0;
+            document.getElementById('eq-mid').value = parseInt(localStorage.getItem('eqMid'), 10) || 0;
+            document.getElementById('eq-high').value = parseInt(localStorage.getItem('eqHigh'), 10) || 0;
+            setFilterValues();
+        }
+
+        function setFilterValues() {
+            filters[0].gain.value = document.getElementById('eq-low').value;
+            filters[1].gain.value = document.getElementById('eq-mid').value;
+            filters[2].gain.value = document.getElementById('eq-high').value;
+            saveSettings();
+        }
+
+        audio.onended = skip; // Automatically skip to next track when current ends
+        window.onunload = saveSettings; // Save settings on window close
+    </script>
+</body>
+</html>

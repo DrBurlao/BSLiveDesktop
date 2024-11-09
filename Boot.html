@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l;'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MBMCQ95B');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6MVWV0R1H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y6MVWV0R1H');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS LiveDesktop</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: #00FF00;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .boot-line {
+            margin: 10px 0;
+            opacity: 0;
+            animation: showLine 1s forwards, changeColor 4s infinite;
+        }
+
+        @keyframes showLine {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes changeColor {
+            0% {
+                color: #00FF00;
+            }
+            25% {
+                color: #FF0000;
+            }
+            50% {
+                color: #0000FF;
+            }
+            75% {
+                color: #FFFF00;
+            }
+            100% {
+                color: #00FF00;
+            }
+        }
+
+        #loading-bar-container {
+            width: 60%;
+            height: 20px;
+            background-color: #333;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #loading-bar {
+            width: 0;
+            height: 100%;
+            background-color: #00FF00;
+            animation: loadBar 4s forwards, changeColor 4s infinite;
+        }
+
+        @keyframes loadBar {
+            to {
+                width: 100%;
+            }
+        }
+
+        #percentage {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        #logo-container {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 5px solid #00FF00;
+            opacity: 0;
+            animation: showLogo 2s forwards;
+        }
+
+        #logo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        #spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #00FF00;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes showLogo {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .final-message {
+            display: none;
+            font-size: 2em;
+            opacity: 0;
+            animation: showFinalMessage 1s forwards;
+        }
+
+        @keyframes showFinalMessage {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+        <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MBMCQ95B"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <div id="boot-screen">
+        <div id="logo-container">
+            <img id="logo" src="icon.png" alt="Logo">
+        </div>
+        <div id="spinner"></div>
+        <div class="boot-line" style="animation-delay: 0s;">Initializing system...</div>
+        <div class="boot-line" style="animation-delay: 0.5s;">Loading modules...</div>
+        <div class="boot-line" style="animation-delay: 1s;">Starting services...</div>
+        <div class="boot-line" style="animation-delay: 1.5s;">Finalizing setup...</div>
+        <div class="boot-line" style="animation-delay: 2s;">Welcome!</div>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+            <div id="percentage">0%</div>
+        </div>
+        <div class="final-message" id="final-message">Welcome BS LiveDesktop!</div>
+        <audio id="audio" src="Load.wav"></audio>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const percentageElement = document.getElementById("percentage");
+            let percentage = 0;
+            const interval = setInterval(() => {
+                percentage += 1;
+                percentageElement.textContent = percentage + "%";
+                if (percentage >= 100) {
+                    clearInterval(interval);
+                }
+            }, 40);  // 4000ms / 100 steps = 40ms per step
+
+            setTimeout(function() {
+                const bootLines = document.querySelectorAll('.boot-line');
+                bootLines.forEach(line => {
+                    line.style.display = 'none';
+                });
+                document.getElementById('loading-bar-container').style.display = 'none';
+                document.getElementById('final-message').style.display = 'block';
+            }, 2500);  // 2.5 seconds to hide initial messages and show final message
+
+            setTimeout(function() {
+                const audio = document.getElementById("audio");
+                audio.play();
+            }, 2000);  // Play sound 2 seconds before animation ends
+
+            setTimeout(function() {
+                window.location.href = "LiveDesktop.html";
+            }, 4000);  // 4 seconds
+        });
+    </script>
+</body>
+</html>

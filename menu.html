@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Start Menu">
+    <title>Start Menu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-0ygsnqJW0b3d1oCj3Bxuv5PnJ6QFHiJx46D1fzF1fPDM5DVO0Cv8LzT7G6AiICg3Bu/2RMxE4AKhIf+oy+Dcig==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        #menu {
+            width: 240px; /* Ajustar el ancho del menú */
+            margin: 20px auto; /* Centrar el menú */
+            padding: 10px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            background-color: #3c3c3c;
+        }
+
+        .menu-item {
+            padding: 5px 10px;
+            margin: 1px 0; /* Espacio entre los elementos del menú */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .menu-item:hover {
+            background-color: #0078d7;
+        }
+
+        .submenu {
+            margin-left: 20px;
+            display: none;
+            position: absolute;
+            z-index: 999999;
+            background-color: #3c3c3c;
+            border-radius: 5px;
+            padding: 5px 0;
+        }
+
+        .submenu-active {
+            display: block;
+        }
+
+        .icon {
+            margin-right: 10px;
+        }
+
+        #search-input {
+            margin-bottom: 10px;
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="search-input" placeholder="Buscar...">
+    <div id="menu">
+        <div class="menu-item" onmouseover="toggleSubMenu('submenu-programs')" onmouseout="toggleSubMenu('submenu-programs')">
+            <i class="fas fa-folder icon"></i>
+            Programs
+            <div class="submenu" id="submenu-programs">
+			    <div class="menu-item" onclick="copyToClipboard('C:/')">File Browser</div>
+                <div class="menu-item" onclick="copyToClipboard('BurlaBrowser.html')">Web Browser</div>
+                <div class="menu-item" onclick="copyToClipboard('APlayer.html')">Audio Player</div>
+		<div class="menu-item" onclick="copyToClipboard('TextEditor.html')">TextEditor</div>
+		<div class="menu-item" onclick="copyToClipboard('SCPlayer.html')">SoundCloud Player</div>
+                <div class="menu-item" onclick="copyToClipboard('YoutubePlayer.html')">Youtube Player</div>
+                <div class="menu-item" onclick="copyToClipboard('BurlaSoftPixelArtEditor.html')">PixelArtEditor</div>
+                <div class="menu-item" onclick="copyToClipboard('BurlaSoftAnimationStudio.html')">AnimationStudio</div>
+            </div>
+        </div>
+        <div class="menu-item" onmouseover="toggleSubMenu('submenu-games')" onmouseout="toggleSubMenu('submenu-games')">
+            <i class="fas fa-images icon"></i>
+            Games
+            <div class="submenu" id="submenu-games">
+		<div class="menu-item" onclick="copyToClipboard('PsykoSnake/index.html')">PsykoSnake</div>
+                <div class="menu-item" onclick="copyToClipboard('DjBurlaoMax/index.html')">DjBurlaoMax</div>
+                <div class="menu-item" onclick="copyToClipboard('BurlaPong/index.html')">BurlaPong</div>
+                <div class="menu-item" onclick="copyToClipboard('Minimal%20Tic%20Tac%20Toe/index.html')">Minimal TicTacToe</div>
+            </div>
+        </div>
+        <div class="menu-item" onmouseover="toggleSubMenu('submenu-systools')" onmouseout="toggleSubMenu('submenu-systools')">
+            <i class="fas fa-music icon"></i>
+            Control Panel
+            <div class="submenu" id="submenu-systools">
+			    <div class="menu-item" onclick="copyToClipboard('HWinfo.html')">Hardware Info</div>
+                <div class="menu-item" onclick="copyToClipboard('BatteryStats.html')">Battery Stats</div>
+				<div class="menu-item" onclick="copyToClipboard('FactoryReset.html')">Backup</div>
+                <div class="menu-item" onclick="copyToClipboard('ImportTool.html')">Import</div>
+                <div class="menu-item" onclick="copyToClipboard('CacheEditor.html')">Cache Editor</div>  
+			    <div class="menu-item" onclick="copyToClipboard('DeleteRenameTool.html')">Rename / Delete</div>
+                <div class="menu-item" onclick="copyToClipboard('DownloadTool.html')">Downloader</div>
+                <div class="menu-item" onclick="copyToClipboard('BurlaSoftRamMonitor.html')">Ram Monitor</div>
+                <div class="menu-item" onclick="copyToClipboard('BurlaSoftLiveConsole.html')">Console</div>
+            </div>
+        </div>
+        <!-- Agrega más categorías y subcategorías según sea necesario -->
+    </div>
+    <script>
+        // Obtener el elemento de entrada de búsqueda
+        const searchInput = document.getElementById('search-input');
+        
+        // Obtener todos los elementos del menú
+        const menuItems = document.querySelectorAll('.menu-item');
+
+        // Agregar evento de escucha para la entrada de búsqueda
+        searchInput.addEventListener('input', function(event) {
+            const searchQuery = event.target.value.toLowerCase(); // Convertir a minúsculas
+            menuItems.forEach(function(item) {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchQuery)) {
+                    item.style.display = 'block'; // Mostrar si coincide con la búsqueda
+                } else {
+                    item.style.display = 'none'; // Ocultar si no coincide
+                }
+            });
+        });
+
+        function copyToClipboard(text) {
+            const input = document.createElement('textarea');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('URL copiada al portapapeles: ' + text);
+        }
+
+        function toggleSubMenu(submenuId) {
+            const submenu = document.getElementById(submenuId);
+            submenu.classList.toggle('submenu-active');
+        }
+        // Permitir redimensionar la ventana del navegador
+        document.getElementsByTagName("html")[0].style.resize = "both";
+    </script>
+</body>
+</html>

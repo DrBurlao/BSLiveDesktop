@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Battery Status</title>
+    <script type="text/javascript">
+        function checkBatteryStatus() {
+            // Method 1: Cordova
+            if ('cordova' in window) {
+                document.addEventListener("deviceready", function() {
+                    window.addEventListener("batterystatus", onBatteryStatus, false);
+                    window.addEventListener("batterylow", onBatteryLow, false);
+                    window.addEventListener("batterycritical", onBatteryCritical, false);
+                }, false);
+            } else {
+                // Method 2: Navigator API
+                if ('getBattery' in navigator) {
+                    navigator.getBattery().then(function(battery) {
+                        updateBatteryStatus(battery);
+                        battery.addEventListener('levelchange', function() {
+                            updateBatteryStatus(battery);
+                        });
+                        battery.addEventListener('chargingchange', function() {
+                            updateBatteryStatus(battery);
+                        });
+                        battery.addEventListener('dischargingtimechange', function() {
+                            updateBatteryStatus(battery);
+                        });
+                        battery.addEventListener('chargingtimechange', function() {
+                            updateBatteryStatus(battery);
+                        });
+                    });
+                } else {
+                    alert("Battery information cannot be obtained in this browser.");
+                }
+            }
+        }
+
+        function onBatteryStatus(info) {
+            var batteryLevel = info.level;
+            var isPlugged = info.isPlugged;
+            var batteryHealth = info.health || 'Unknown';
+            var batteryTechnology = info.technology || 'Unknown';
+            var batteryTemperature = info.temperature || 'Unknown';
+            var batteryVoltage = info.voltage || 'Unknown';
+
+            document.getElementById("batteryLevel").innerHTML = "Battery Level: " + batteryLevel + "%";
+            document.getElementById("isPlugged").innerHTML = "Plugged In: " + (isPlugged ? "Yes" : "No");
+            document.getElementById("batteryHealth").innerHTML = "Battery Health: " + batteryHealth;
+            document.getElementById("batteryTechnology").innerHTML = "Battery Technology: " + batteryTechnology;
+            document.getElementById("batteryTemperature").innerHTML = "Battery Temperature: " + batteryTemperature + "°C";
+            document.getElementById("batteryVoltage").innerHTML = "Battery Voltage: " + batteryVoltage + "V";
+        }
+
+        function onBatteryLow(info) {
+            alert("Battery low: " + info.level + "%");
+        }
+
+        function onBatteryCritical(info) {
+            alert("Battery critical: " + info.level + "%");
+        }
+
+        function updateBatteryStatus(battery) {
+            var batteryLevel = (battery.level * 100).toFixed(2);
+            var isPlugged = battery.charging;
+            var batteryHealth = 'Unknown';
+            var batteryTechnology = 'Unknown';
+            var batteryTemperature = 'Unknown';
+            var batteryVoltage = 'Unknown';
+
+            document.getElementById("batteryLevel").innerHTML = "Battery Level: " + batteryLevel + "%";
+            document.getElementById("isPlugged").innerHTML = "Plugged In: " + (isPlugged ? "Yes" : "No");
+            document.getElementById("batteryHealth").innerHTML = "Battery Health: " + batteryHealth;
+            document.getElementById("batteryTechnology").innerHTML = "Battery Technology: " + batteryTechnology;
+            document.getElementById("batteryTemperature").innerHTML = "Battery Temperature: " + batteryTemperature + "°C";
+            document.getElementById("batteryVoltage").innerHTML = "Battery Voltage: " + batteryVoltage + "V";
+        }
+
+        window.onload = function() {
+            checkBatteryStatus();
+        };
+    </script>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #ff9800;
+            margin-bottom: 20px;
+        }
+        #batteryInfo {
+            border: 2px solid #ff9800;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            background-color: #333;
+        }
+        .batteryData {
+            margin-top: 10px;
+            font-size: 18px;
+            text-align: left;
+        }
+        .batteryLabel {
+            font-weight: bold;
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <h1>Battery Status</h1>
+    <div id="batteryInfo">
+        <div class="batteryData" id="batteryLevel"></div>
+        <div class="batteryData" id="isPlugged"></div>
+        <div class="batteryData" id="batteryHealth"></div>
+        <div class="batteryData" id="batteryTechnology"></div>
+        <div class="batteryData" id="batteryTemperature"></div>
+        <div class="batteryData" id="batteryVoltage"></div>
+    </div>
+</body>
+</html>

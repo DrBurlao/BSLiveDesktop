@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BurlaSoft LiveConsole</title>
+</head>
+<body style="background-color: black; color: lime; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0;">
+<div style="max-width: 600px; margin: 20px auto; padding: 20px; border: 2px solid lime; border-radius: 5px; background-color: black; box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.5);">
+  <pre style="font-family: 'Courier New', Courier, monospace; text-align: center; margin-bottom: 20px;">
+  ____             _       ____         __ _   
+ | __ ) _   _ _ __| | __ _/ ___|  ___  / _| |_ 
+ |  _ \| | | | '__| |/ _` \___ \ / _ \| |_| __|
+ | |_) | |_| | |  | | (_| |___) | (_) |  _| |_ 
+ |____/ \__,_|_|  |_|\__,_|____/ \___/|_|  \__|
+                                               </pre>
+  <h1 style="text-align: center;">BurlaSoft LiveConsole</h1>
+  <div id="console" style="border: 1px solid lime; padding: 10px; margin-bottom: 10px; max-height: 200px; overflow-y: scroll; background-color: black; line-height: 1.5;"></div>
+  <form id="commandForm" style="display: flex; align-items: center;">
+    <span class="prompt" style="color: lime; margin-right: 5px;">BurlaSoft &gt;</span>
+    <input type="text" id="commandInput" autocomplete="on" style="flex-grow: 1; padding: 5px; margin-right: 10px; border: none; background-color: black; color: lime; caret-color: lime; outline: none;">
+    <button type="submit" style="padding: 5px 10px; border: none; background-color: lime; color: black; cursor: pointer; border-radius: 3px;">Execute</button>
+  </form>
+  <ul id="commandHistory" style="display: none; list-style-type: none; padding-left: 0; margin-top: 0; position: absolute; background-color: black; border: 1px solid lime; max-height: 100px; overflow-y: auto;"></ul>
+</div>
+
+</body>
+</html>

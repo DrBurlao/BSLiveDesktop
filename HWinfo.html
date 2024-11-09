@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Hardware Information</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #ff9800;
+            margin-bottom: 20px;
+        }
+        #hardwareInfo {
+            border: 2px solid #ff9800;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            background-color: #333;
+        }
+        .hardwareData {
+            margin-top: 10px;
+            font-size: 18px;
+            text-align: left;
+        }
+        .hardwareLabel {
+            font-weight: bold;
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hardware Information</h1>
+    <div id="hardwareInfo">
+        <div class="hardwareData">
+            <span class="hardwareLabel">CPU Cores:</span> <span id="cpuCores">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">CPU Speed:</span> <span id="cpuSpeed">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Device Memory:</span> <span id="deviceMemory">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Platform:</span> <span id="platform">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">User Agent:</span> <span id="userAgent">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Screen Resolution:</span> <span id="screenResolution">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Device Orientation:</span> <span id="deviceOrientation">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Browser Version:</span> <span id="browserVersion">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">GPU:</span> <span id="gpu">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Storage:</span> <span id="storage">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Operating System:</span> <span id="os">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Sensors:</span> <span id="sensors">Loading...</span>
+        </div>
+        <div class="hardwareData">
+            <span class="hardwareLabel">Input Devices:</span> <span id="inputDevices">Loading...</span>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function showHardwareInfo() {
+            document.getElementById("cpuCores").textContent = navigator.hardwareConcurrency || 'Unknown';
+            document.getElementById("cpuSpeed").textContent = (navigator.cpuMaxFrequency / 1000).toFixed(2) + ' GHz' || 'Unknown';
+            document.getElementById("deviceMemory").textContent = navigator.deviceMemory || 'Unknown';
+            document.getElementById("platform").textContent = navigator.platform || 'Unknown';
+            document.getElementById("userAgent").textContent = navigator.userAgent || 'Unknown';
+            document.getElementById("screenResolution").textContent = screen.width + "x" + screen.height;
+            document.getElementById("deviceOrientation").textContent = screen.orientation.type || 'Unknown';
+            document.getElementById("browserVersion").textContent = navigator.appVersion || 'Unknown';
+            document.getElementById("gpu").textContent = navigator.gpu || 'Unknown';
+            document.getElementById("storage").textContent = navigator.storage.estimate || 'Unknown';
+            document.getElementById("os").textContent = navigator.oscpu || 'Unknown';
+            document.getElementById("sensors").textContent = navigator.sensors || 'Unknown';
+            document.getElementById("inputDevices").textContent = navigator.inputDevices || 'Unknown';
+        }
+
+        window.onload = function() {
+            showHardwareInfo();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag and Drop to LocalStorage</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #333;
+        color: #eee;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px; /* Mover todo más arriba */
+    }
+
+    #drop_zone {
+        border: 2px dashed #666;
+        width: 200px;
+        height: 100px;
+        padding: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: #444;
+        border-radius: 10px;
+        transition: border-color 0.3s;
+    }
+
+    #drop_zone p {
+        margin: 0;
+        font-size: 12px;
+        color: #ccc;
+    }
+
+    #drop_zone.dragover {
+        border-color: #aaa;
+    }
+
+    #file_list {
+        list-style-type: none;
+        padding: 0;
+        max-width: 200px;
+        margin: auto;
+    }
+
+    #file_list li {
+        margin-bottom: 5px;
+        padding: 5px;
+        background-color: #555;
+        border-radius: 5px;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #file_list img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    #preview {
+        max-width: 200px;
+        margin-bottom: 20px;
+    }
+
+    #save_button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    #save_button:hover {
+        background-color: #45a049;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div id="drop_zone">
+        <p>Arrastra y suelta archivos aquí.</p>
+    </div>
+    <div id="preview"></div>
+    <button id="save_button">Guardar Cambios</button>
+</div>
+
+<script>
+    var dropZone = document.getElementById('drop_zone');
+    var fileList = document.getElementById('file_list');
+    var saveButton = document.getElementById('save_button');
+    var preview = document.getElementById('preview');
+
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('dragover');
+
+        var files = e.dataTransfer.files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var content = e.target.result;
+                localStorage.setItem(file.name, content);
+                var listItem = document.createElement('li');
+                listItem.innerHTML = '<strong>' + file.name + '</strong><br>';
+                if (file.type.match(/image.*/)) {
+                    var img = document.createElement('img');
+                    img.src = content;
+                    listItem.appendChild(img);
+                }
+                fileList.appendChild(listItem);
+            };
+            reader.readAsDataURL(file);
+
+            // Show preview
+            var filePreview = document.createElement('p');
+            filePreview.textContent = file.name;
+            preview.appendChild(filePreview);
+        }
+    });
+
+    saveButton.addEventListener('click', function() {
+        // Aquí podrías realizar alguna acción adicional antes de guardar
+        alert('Cambios guardados en localStorage.');
+        // Por ejemplo, podrías redirigir a otra página
+        // window.location.href = 'otra_pagina.html';
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrar archivos en LocalStorage</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    #container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        max-width: 400px;
+        width: 100%;
+    }
+
+    #file_list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #file_list li {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+    }
+
+    #file_list img {
+        margin-right: 10px;
+        max-width: 50px;
+        max-height: 50px;
+        border-radius: 5px;
+    }
+
+    #file_list label {
+        flex-grow: 1;
+        cursor: pointer;
+    }
+
+    #delete_button, #rename_button {
+        display: block;
+        padding: 10px 20px;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 20px;
+    }
+
+    #delete_button:hover, #rename_button:hover {
+        background-color: #d32f2f;
+    }
+</style>
+</head>
+<body>
+
+<div id="container">
+    <ul id="file_list"></ul>
+    <button id="delete_button">Eliminar Archivos Seleccionados</button>
+    <button id="rename_button">Renombrar Archivo Seleccionado</button>
+</div>
+
+<script>
+    var fileList = document.getElementById('file_list');
+    var deleteButton = document.getElementById('delete_button');
+    var renameButton = document.getElementById('rename_button');
+
+    // Función para listar los archivos almacenados en localStorage
+    function listFiles() {
+        fileList.innerHTML = '';
+        for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            var value = localStorage.getItem(key);
+            var listItem = document.createElement('li');
+            listItem.innerHTML = '<img src="' + value + '" alt="">' +
+                                  '<label><input type="checkbox" name="file" value="' + key + '"> ' + key + '</label>';
+            fileList.appendChild(listItem);
+        }
+    }
+
+    // Llama a la función para listar los archivos al cargar la página
+    listFiles();
+
+    // Función para eliminar los archivos seleccionados
+    function deleteSelectedFiles() {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        checkboxes.forEach(function(checkbox) {
+            var key = checkbox.value;
+            localStorage.removeItem(key);
+        });
+        // Vuelve a listar los archivos después de eliminar los seleccionados
+        listFiles();
+    }
+
+    deleteButton.addEventListener('click', deleteSelectedFiles);
+
+    // Función para renombrar el archivo seleccionado
+    function renameSelectedFile() {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        if (checkboxes.length !== 1) {
+            alert('Selecciona exactamente un archivo para renombrar.');
+            return;
+        }
+        var newName = prompt('Ingresa el nuevo nombre del archivo:');
+        if (newName) {
+            var oldName = checkboxes[0].value;
+            var value = localStorage.getItem(oldName);
+            localStorage.removeItem(oldName);
+            localStorage.setItem(newName, value);
+            // Vuelve a listar los archivos después de renombrar
+            listFiles();
+        }
+    }
+
+    renameButton.addEventListener('click', renameSelectedFile);
+</script>
+
+</body>
+</html>

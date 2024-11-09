@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l;'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MBMCQ95B');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6MVWV0R1H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y6MVWV0R1H');
+    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BurlaSoft - LiveDesktop</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #222;
+      color: #eee;
+      font-family: Arial, sans-serif;
+    }
+
+    .frame-container {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 aspect ratio */
+      background-color: #333; /* Color de fondo del contenedor */
+    }
+
+    .frame-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none; /* Remove iframe border */
+      background-color: #444; /* Color de fondo del iframe */
+      color: #eee; /* Color de texto del iframe */
+    }
+
+    .tab-container {
+      position: fixed;
+      top: 0;
+      right: -300px; /* Oculto por defecto */
+      width: 300px;
+      height: 100%;
+      background-color: #222; /* Color de fondo del contenedor */
+      border-left: 2px solid #444; /* Borde del contenedor */
+      transition: right 0.3s ease; /* Animación suave */
+      overflow-y: auto; /* Añadir scroll si es necesario */
+    }
+
+    .tab {
+      position: fixed;
+      top: 10px;
+      right: 0;
+      width: 40px;
+      height: 100px;
+      background-color: #808080; /* Color de fondo de la pestaña */
+      color: #fff; /* Color del texto de la pestaña */
+      text-align: center;
+      line-height: 100px;
+      cursor: pointer;
+      border-radius: 5px 0 0 5px; /* Bordes redondeados */
+    }
+
+    .aspect-ratio-tab {
+      top: 130px; /* Posición de la pestaña de aspect ratios */
+    }
+
+    .settings-tab {
+      top: 250px; /* Posición de la pestaña de settings */
+    }
+
+    .help-tab {
+      top: 370px; /* Posición de la pestaña de help */
+    }
+
+    .dropdown-content {
+      display: block;
+      padding: 8px 16px;
+      text-decoration: none;
+      color: #eee; /* Color del texto del menú */
+      cursor: pointer;
+    }
+
+    .dropdown-content:hover {
+      background-color: #666; /* Color de fondo al pasar el ratón */
+    }
+
+    /* DSP Styles */
+    .dsp-container, .settings-container, .help-container {
+      text-align: center;
+      width: 90%;
+      max-width: 700px;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      margin: 20px auto;
+    }
+
+    .dsp-container h1, .settings-container h1, .help-container h1 {
+      margin-bottom: 20px;
+    }
+
+    .dsp-controls, .settings-controls, .help-controls {
+      margin: 20px 0;
+    }
+
+    .dsp-controls label, .settings-controls label, .help-controls label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .dsp-controls input[type="range"], .settings-controls input[type="range"] {
+      width: 100%;
+      background-color: #444;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-webkit-slider-thumb, 
+    .settings-controls input[type="range"]::-webkit-slider-thumb {
+      background: #007bff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-moz-range-thumb, 
+    .settings-controls input[type="range"]::-moz-range-thumb {
+      background: #007bff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-ms-thumb, 
+    .settings-controls input[type="range"]::-ms-thumb {
+      background: #007bff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-webkit-slider-runnable-track, 
+    .settings-controls input[type="range"]::-webkit-slider-runnable-track {
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+    }
+
+    .dsp-controls input[type="range"]::-moz-range-track, 
+    .settings-controls input[type="range"]::-moz-range-track {
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+    }
+
+    .dsp-controls input[type="range"]::-ms-track, 
+    .settings-controls input[type="range"]::-ms-track {
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+    }
+
+    .dsp-controls .volume-display {
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+
+    .dsp-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .dsp-button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .dsp-button:hover {
+      background-color: #0056b3;
+    }
+
+    .eq-presets {
+      margin-top: 20px;
+    }
+
+    .eq-presets select {
+      padding: 10px;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .graph-container {
+      margin-top: 20px;
+    }
+
+    .graph-container canvas {
+      width: 100%;
+      height: 200px;
+      background-color: #444;
+      border-radius: 5px;
+    }
+
+    .advanced-controls {
+      margin-top: 20px;
+    }
+
+    .advanced-controls label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .advanced-controls input[type="range"] {
+      margin-bottom: 10px;
+    }
+
+    /* Settings Styles */
+    .settings-controls select, .settings-controls input {
+      width: 100%;
+      padding: 8px;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      margin: 5px 0;
+    }
+
+    .settings-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .settings-buttons .dsp-button {
+      flex: 1;
+      margin: 0 10px;
+    }
+
+    /* Tooltips */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position above the text */
+      left: 50%;
+      margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Light Theme */
+    body.light-theme {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.light-theme .frame-container {
+      background-color: #ddd;
+    }
+
+    body.light-theme .frame-container iframe {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.light-theme .tab-container {
+      background-color: #f0f0f0;
+      border-left: 2px solid #ccc;
+    }
+
+    body.light-theme .tab {
+      background-color: #ccc;
+      color: #000;
+    }
+
+    body.light-theme .dsp-container, 
+    body.light-theme .settings-container, 
+    body.light-theme .help-container {
+      background-color: #eee;
+    }
+
+    body.light-theme .dropdown-content {
+      color: #000;
+    }
+
+    body.light-theme .dropdown-content:hover {
+      background-color: #ccc;
+    }
+
+    body.light-theme .dsp-controls input[type="range"], 
+    body.light-theme .settings-controls input[type="range"] {
+      background-color: #ccc;
+    }
+
+    body.light-theme .dsp-controls input[type="range"]::-webkit-slider-thumb, 
+    body.light-theme .settings-controls input[type="range"]::-webkit-slider-thumb {
+      background: #007bff;
+    }
+
+    body.light-theme .dsp-controls input[type="range"]::-moz-range-thumb, 
+    body.light-theme .settings-controls input[type="range"]::-moz-range-thumb {
+      background: #007bff;
+    }
+
+    body.light-theme .dsp-controls input[type="range"]::-ms-thumb, 
+    body.light-theme .settings-controls input[type="range"]::-ms-thumb {
+      background: #007bff;
+    }
+
+    body.light-theme .dsp-controls input[type="range"]::-webkit-slider-runnable-track, 
+    body.light-theme .settings-controls input[type="range"]::-webkit-slider-runnable-track {
+      background: #bbb;
+    }
+
+    body.light-theme .dsp-controls input[type="range"]::-moz-range-track, 
+    body.light-theme .settings-controls input[type="range"]::-moz-range-track {
+      background: #bbb;
+    }
+
+    body.light-theme .dsp-controls input[type="range"]::-ms-track, 
+    body.light-theme .settings-controls input[type="range"]::-ms-track {
+      background: #bbb;
+    }
+
+    body.light-theme .dsp-button {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    body.light-theme .dsp-button:hover {
+      background-color: #0056b3;
+    }
+
+    body.light-theme .eq-presets select {
+      background-color: #ccc;
+    }
+
+    body.light-theme .graph-container canvas {
+      background-color: #bbb;
+    }
+  </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MBMCQ95B"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+  <div class="frame-container">
+    <iframe id="contentFrame" src="Boot.html"></iframe>
+  </div>
+
+  <div class="tab-container" id="audioDspContainer">
+    <div class="dsp-container">
+      <h1>Control DSP de Audio</h1>
+      <div class="dsp-controls">
+        <label for="volume">Volumen <span class="tooltip">?<span class="tooltiptext">Ajusta el volumen general</span></span></label>
+        <input type="range" id="volume" min="0" max="100" value="50" oninput="updateVolumeDisplay()">
+        <div class="volume-display" id="volumeDisplay">50%</div>
+        <label for="eq">Ecualizador <span class="tooltip">?<span class="tooltiptext">Ajusta la configuración del ecualizador</span></span></label>
+        <input type="range" id="eq" min="0" max="100" value="50">
+      </div>
+      <div class="eq-presets">
+        <label for="presets">Presets del Ecualizador <span class="tooltip">?<span class="tooltiptext">Selecciona un preset del ecualizador</span></span></label>
+        <select id="presets">
+          <option value="flat">Plano</option>
+          <option value="bassBoost">Realce de Bajos</option>
+          <option value="trebleBoost">Realce de Agudos</option>
+        </select>
+      </div>
+      <div class="graph-container">
+        <canvas id="eqGraph"></canvas>
+      </div>
+      <div class="advanced-controls">
+        <label for="custom1">Control Personalizado 1</label>
+        <input type="range" id="custom1" min="0" max="100" value="50">
+        <label for="custom2">Control Personalizado 2</label>
+        <input type="range" id="custom2" min="0" max="100" value="50">
+        <label for="custom3">Control Personalizado 3</label>
+        <input type="range" id="custom3" min="0" max="100" value="50">
+      </div>
+      <div class="dsp-buttons">
+        <button class="dsp-button" onclick="applySettings()">Aplicar</button>
+        <button class="dsp-button" onclick="resetSettings()">Restablecer</button>
+        <button class="dsp-button" onclick="resetToDefaults()">Restablecer a Valores Predeterminados</button>
+        <button class="dsp-button" onclick="saveSettings()">Guardar Configuración</button>
+        <button class="dsp-button" onclick="loadSettings()">Cargar Configuración</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-container" id="aspectRatioContainer">
+    <div class="dsp-container">
+      <h1>Control de Aspect Ratio</h1>
+      <div class="dropdown">
+        <div class="dropdown-content" onclick="setAspectRatio('16:9')">16:9</div>
+        <div class="dropdown-content" onclick="setAspectRatio('4:3')">4:3</div>
+        <div class="dropdown-content" onclick="setAspectRatio('1:1')">1:1</div>
+        <div class="dropdown-content" onclick="setAspectRatio('2.35:1')">2.35:1</div>
+        <div class="dropdown-content" onclick="setAspectRatio('21:9')">21:9</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-container" id="settingsContainer">
+    <div class="settings-container">
+      <h1>Configuraciones</h1>
+      <div class="settings-controls">
+        <label for="brightness">Brillo</label>
+        <input type="range" id="brightness" min="0" max="100" value="50">
+        <label for="contrast">Contraste</label>
+        <input type="range" id="contrast" min="0" max="100" value="50">
+        <label for="language">Idioma</label>
+        <select id="language">
+          <option value="en">Inglés</option>
+          <option value="es">Español</option>
+          <option value="fr">Francés</option>
+          <option value="de">Alemán</option>
+          <option value="it">Italiano</option>
+          <option value="pt">Portugués</option>
+        </select>
+        <label for="theme">Tema</label>
+        <select id="theme" onchange="toggleTheme()">
+          <option value="dark">Oscuro</option>
+          <option value="light">Claro</option>
+        </select>
+      </div>
+      <div class="settings-buttons">
+        <button class="dsp-button">Guardar</button>
+        <button class="dsp-button">Restablecer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-container" id="helpContainer">
+    <div class="help-container">
+      <h1>Ayuda</h1>
+      <div class="help-controls">
+        <p>Bienvenido a la sección de ayuda. Aquí tienes algunos consejos para empezar:</p>
+        <ul>
+          <li>Utiliza los controles DSP para ajustar la configuración de audio.</li>
+          <li>Cambia el aspect ratio utilizando la pestaña Aspect Ratio.</li>
+          <li>Ajusta la configuración de la pantalla en la pestaña Configuraciones.</li>
+          <li>Si necesitas más ayuda, consulta el manual de usuario o contacta con el soporte.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" onclick="toggleTab('audioDspContainer')">DSP</div>
+  <div class="tab aspect-ratio-tab" onclick="toggleTab('aspectRatioContainer')">Aspect</div>
+  <div class="tab settings-tab" onclick="toggleTab('settingsContainer')">Settings</div>
+  <div class="tab help-tab" onclick="toggleTab('helpContainer')">Help</div>
+
+  <script>
+    function toggleTab(tabId) {
+      var tab = document.getElementById(tabId);
+      if (tab.style.right === '0px') {
+        tab.style.right = '-300px';
+      } else {
+        tab.style.right = '0px';
+      }
+    }
+
+    function setAspectRatio(ratio) {
+      var iframe = document.getElementById('contentFrame');
+      var container = iframe.parentElement;
+      switch (ratio) {
+        case '16:9':
+          container.style.paddingTop = '56.25%';
+          break;
+        case '4:3':
+          container.style.paddingTop = '75%';
+          break;
+        case '1:1':
+          container.style.paddingTop = '100%';
+          break;
+        case '2.35:1':
+          container.style.paddingTop = '42.55%';
+          break;
+        case '21:9':
+          container.style.paddingTop = '42.85%';
+          break;
+      }
+    }
+
+    function updateVolumeDisplay() {
+      var volume = document.getElementById('volume').value;
+      document.getElementById('volumeDisplay').innerText = volume + '%';
+    }
+
+    function toggleTheme() {
+      var theme = document.getElementById('theme').value;
+      document.body.className = theme === 'light' ? 'light-theme' : '';
+    }
+
+    function applySettings() {
+      alert('Configuración aplicada');
+    }
+
+    function resetSettings() {
+      document.getElementById('volume').value = 50;
+      document.getElementById('eq').value = 50;
+      document.getElementById('presets').value = 'flat';
+      updateVolumeDisplay();
+    }
+
+    function resetToDefaults() {
+      resetSettings();
+      document.getElementById('brightness').value = 50;
+      document.getElementById('contrast').value = 50;
+      document.getElementById('language').value = 'en';
+      document.getElementById('theme').value = 'dark';
+      toggleTheme();
+    }
+
+    function saveSettings() {
+      var settings = {
+        volume: document.getElementById('volume').value,
+        eq: document.getElementById('eq').value,
+        presets: document.getElementById('presets').value,
+        brightness: document.getElementById('brightness').value,
+        contrast: document.getElementById('contrast').value,
+        language: document.getElementById('language').value,
+        theme: document.getElementById('theme').value,
+      };
+      localStorage.setItem('audioDspSettings', JSON.stringify(settings));
+      alert('Configuración guardada');
+    }
+
+    function loadSettings() {
+      var settings = JSON.parse(localStorage.getItem('audioDspSettings'));
+      if (settings) {
+        document.getElementById('volume').value = settings.volume;
+        document.getElementById('eq').value = settings.eq;
+        document.getElementById('presets').value = settings.presets;
+        document.getElementById('brightness').value = settings.brightness;
+        document.getElementById('contrast').value = settings.contrast;
+        document.getElementById('language').value = settings.language;
+        document.getElementById('theme').value = settings.theme;
+        updateVolumeDisplay();
+        toggleTheme();
+        alert('Configuración cargada');
+      } else {
+        alert('No hay configuración guardada');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var ctx = document.getElementById('eqGraph').getContext('2d');
+      var gradient = ctx.createLinearGradient(0, 0, 0, 200);
+      gradient.addColorStop(0, 'rgba(0, 123, 255, 0.5)');
+      gradient.addColorStop(1, 'rgba(0, 123, 255, 0)');
+
+      var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['60Hz', '170Hz', '310Hz', '600Hz', '1kHz', '3kHz', '6kHz', '12kHz'],
+          datasets: [{
+            label: 'Nivel',
+            backgroundColor: gradient,
+            borderColor: '#007bff',
+            data: [12, 19, 3, 5, 2, 3, 10, 15],
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            resize: none;
+            font-size: 16px;
+            line-height: 1.5;
+            background-color: #444;
+            color: #fff;
+        }
+        .button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button.clear {
+            background-color: #dc3545;
+        }
+        .button.clear:hover {
+            background-color: #bd2130;
+        }
+        .button.save {
+            background-color: #28a745;
+        }
+        .button.save:hover {
+            background-color: #218838;
+        }
+        .button.download {
+            background-color: #17a2b8;
+        }
+        .button.download:hover {
+            background-color: #138496;
+        }
+        .info {
+            margin-top: 10px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Editor</h1>
+        <textarea id="editor" oninput="updateWordCount()"></textarea>
+        <div class="info">Word Count: <span id="wordCount">0</span></div>
+        <br>
+        <button class="button save" onclick="saveText()">Save</button>
+        <button class="button clear" onclick="clearText()">Clear</button>
+        <button class="button load" onclick="loadTextFromCache()">Load from Cache</button>
+        <button class="button download" onclick="downloadText()">Download Text</button>
+        <br><br>
+        <input type="file" id="fileInput" accept=".txt" onchange="importFile(event)">
+        <br><br>
+        <input type="text" id="searchInput" placeholder="Search...">
+        <input type="text" id="replaceInput" placeholder="Replace...">
+        <button class="button" onclick="searchReplace()">Search & Replace</button>
+        <button class="button" onclick="applyStyle('bold')">Bold</button>
+        <button class="button" onclick="applyStyle('italic')">Italic</button>
+        <button class="button" onclick="applyStyle('underline')">Underline</button>
+        <select id="fontSizeSelect">
+            <option value="12px">Small</option>
+            <option value="16px" selected>Normal</option>
+            <option value="20px">Large</option>
+        </select>
+        <button class="button" onclick="changeFontSize()">Change Font Size</button>
+    </div>
+
+    <script>
+        function saveText() {
+            var text = document.getElementById("editor").value;
+            if (text.trim() !== "") {
+                localStorage.setItem("savedText", text);
+            }
+        }
+
+        function clearText() {
+            document.getElementById("editor").value = "";
+            updateWordCount(); // Update word count when clearing text
+        }
+
+        function loadTextFromCache() {
+            var savedText = localStorage.getItem("savedText");
+            if (savedText !== null) {
+                document.getElementById("editor").value = savedText;
+                updateWordCount(); // Update word count when loading text from cache
+            }
+        }
+
+        function updateWordCount() {
+            var text = document.getElementById("editor").value;
+            var words = text.trim().split(/\s+/).length;
+            document.getElementById("wordCount").textContent = words;
+        }
+
+        function downloadText() {
+            var text = document.getElementById("editor").value;
+            var blob = new Blob([text], { type: "text/plain" });
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "text.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function importFile(event) {
+            var file = event.target.files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var text = e.target.result;
+                document.getElementById("editor").value = text;
+                updateWordCount(); // Update word count when importing file
+            };
+            reader.readAsText(file);
+        }
+
+        function searchReplace() {
+            var searchText = document.getElementById("searchInput").value;
+            var replaceText = document.getElementById("replaceInput").value;
+            var textArea = document.getElementById("editor");
+            var text = textArea.value;
+            var newText = text.replace(new RegExp(searchText, "g"), replaceText);
+            textArea.value = newText;
+        }
+
+        function applyStyle(style) {
+            var textArea = document.getElementById("editor");
+            var selectedText = textArea.value.substring(textArea.selectionStart, textArea.selectionEnd);
+            var newText;
+            switch (style) {
+                case 'bold':
+                    newText = '<b>' + selectedText + '</b>';
+                    break;
+                case 'italic':
+                    newText = '<i>' + selectedText + '</i>';
+                    break;
+                case 'underline':
+                    newText = '<u>' + selectedText + '</u>';
+                    break;
+                default:
+                    break;
+            }
+            var textBefore = textArea.value.substring(0, textArea.selectionStart);
+            var textAfter = textArea.value.substring(textArea.selectionEnd);
+            textArea.value = textBefore + newText + textAfter;
+        }
+
+        function changeFontSize() {
+            var fontSize = document.getElementById("fontSizeSelect").value;
+            var textArea = document.getElementById("editor");
+            textArea.style.fontSize = fontSize;
+        }
+
+        // Load saved text on page load
+        window.onload = function() {
+            loadTextFromCache();
+        };
+    </script>
+</body>
+</html>

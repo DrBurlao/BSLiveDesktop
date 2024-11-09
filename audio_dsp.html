@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Audio DSP</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #222;
+      color: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+    }
+
+    .dsp-container {
+      text-align: center;
+      width: 90%;
+      max-width: 700px;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .dsp-container h1 {
+      margin-bottom: 20px;
+    }
+
+    .dsp-controls {
+      margin: 20px 0;
+    }
+
+    .dsp-controls label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .dsp-controls input[type="range"] {
+      width: 100%;
+      background-color: #444;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-webkit-slider-thumb {
+      background: #007bff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-moz-range-thumb {
+      background: #007bff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-ms-thumb {
+      background: #007bff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .dsp-controls input[type="range"]::-webkit-slider-runnable-track {
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+    }
+
+    .dsp-controls input[type="range"]::-moz-range-track {
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+    }
+
+    .dsp-controls input[type="range"]::-ms-track {
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+    }
+
+    .dsp-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .dsp-button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .dsp-button:hover {
+      background-color: #0056b3;
+    }
+
+    .eq-presets {
+      margin-top: 20px;
+    }
+
+    .eq-presets select {
+      padding: 10px;
+      background-color: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .graph-container {
+      margin-top: 20px;
+    }
+
+    .graph-container canvas {
+      width: 100%;
+      height: 200px;
+      background-color: #444;
+      border-radius: 5px;
+    }
+
+    .advanced-controls {
+      margin-top: 20px;
+    }
+
+    .advanced-controls label {
+      display: block;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="dsp-container">
+    <h1>Advanced Audio DSP</h1>
+    <div class="dsp-controls">
+      <label for="volume">Volume</label>
+      <input type="range" id="volume" min="0" max="100" value="50">
+      <label for="bass">Bass</label>
+      <input type="range" id="bass" min="0" max="100" value="50">
+      <label for="mid">Mid</label>
+      <input type="range" id="mid" min="0" max="100" value="50">
+      <label for="treble">Treble</label>
+      <input type="range" id="treble" min="0" max="100" value="50">
+      <label for="balance">Balance</label>
+      <input type="range" id="balance" min="-50" max="50" value="0">
+      <label for="reverb">Reverb</label>
+      <input type="range" id="reverb" min="0" max="100" value="50">
+      <label for="echo">Echo</label>
+      <input type="range" id="echo" min="0" max="100" value="50">
+      <label for="distortion">Distortion</label>
+      <input type="range" id="distortion" min="0" max="100" value="0">
+    </div>
+    <div class="eq-presets">
+      <label for="presets">EQ Presets</label>
+      <select id="presets" onchange="applyPreset(this.value)">
+        <option value="flat">Flat</option>
+        <option value="rock">Rock</option>
+        <option value="jazz">Jazz</option>
+        <option value="pop">Pop</option>
+        <option value="classical">Classical</option>
+        <option value="hardstyle">Hardstyle</option>
+        <option value="hardcore">Hardcore</option>
+        <option value="hiphop">Hip-Hop</option>
+        <option value="electronic">Electronic</option>
+      </select>
+    </div>
+    <div class="graph-container">
+      <canvas id="eqGraph"></canvas>
+    </div>
+    <div class="dsp-buttons">
+      <button class="dsp-button" onclick="resetSettings()">Reset</button>
+      <button class="dsp-button" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('eqGraph');
+    const ctx = canvas.getContext('2d');
+
+    function drawGraph() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const settings = getSettings();
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - (settings.bass / 100) * canvas.height);
+      ctx.lineTo(canvas.width / 4, canvas.height - (settings.mid / 100) * canvas.height);
+      ctx.lineTo(canvas.width / 2, canvas.height - (settings.treble / 100) * canvas.height);
+      ctx.lineTo(canvas.width * 3 / 4, canvas.height - (settings.reverb / 100) * canvas.height);
+      ctx.lineTo(canvas.width, canvas.height - (settings.echo / 100) * canvas.height);
+      ctx.strokeStyle = '#007bff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function resetSettings() {
+      document.getElementById('volume').value = 50;
+      document.getElementById('bass').value = 50;
+      document.getElementById('mid').value = 50;
+      document.getElementById('treble').value = 50;
+      document.getElementById('balance').value = 0;
+      document.getElementById('reverb').value = 50;
+      document.getElementById('echo').value = 50;
+      document.getElementById('distortion').value = 0;
+      document.getElementById('presets').value = 'flat';
+      drawGraph();
+    }
+
+    function saveSettings() {
+      const settings = getSettings();
+      localStorage.setItem('dspSettings', JSON.stringify(settings));
+      alert('Settings saved');
+    }
+
+    function applyPreset(preset) {
+      const presets = {
+        flat: { bass: 50, mid: 50, treble: 50, balance: 0, reverb: 50, echo: 50, distortion: 0 },
+        rock: { bass: 70, mid: 60, treble: 60, balance: 0, reverb: 60, echo: 50, distortion: 20 },
+        jazz: { bass: 60, mid: 70, treble: 60, balance: 0, reverb: 40, echo: 30, distortion: 10 },
+        pop: { bass: 65, mid: 55, treble: 65, balance: 0, reverb: 50, echo: 50, distortion: 10 },
+        classical: { bass: 50, mid: 60, treble: 80, balance: 0, reverb: 30, echo: 20, distortion: 0 },
+        hardstyle: { bass: 80, mid: 50, treble: 70, balance: 0, reverb: 70, echo: 60, distortion: 40 },
+        hardcore: { bass: 85, mid: 50, treble: 75, balance: 0, reverb: 80, echo: 70, distortion: 50 },
+        hiphop: { bass: 75, mid: 50, treble: 60, balance: 0, reverb: 50, echo: 40, distortion: 20 },
+        electronic: { bass: 70, mid: 60, treble: 70, balance: 0, reverb: 60, echo: 60, distortion: 30 }
+      };
+      const selectedPreset = presets[preset];
+      document.getElementById('bass').value = selectedPreset.bass;
+      document.getElementById('mid').value = selectedPreset.mid;
+      document.getElementById('treble').value = selectedPreset.treble;
+      document.getElementById('balance').value = selectedPreset.balance;
+      document.getElementById('reverb').value = selectedPreset.reverb;
+      document.getElementById('echo').value = selectedPreset.echo;
+      document.getElementById('distortion').value = selectedPreset.distortion;
+      drawGraph();
+    }
+
+    function getSettings() {
+      return {
+        volume: document.getElementById('volume').value,
+        bass: document.getElementById('bass').value,
+        mid: document.getElementById('mid').value,
+        treble: document.getElementById('treble').value,
+        balance: document.getElementById('balance').value,
+        reverb: document.getElementById('reverb').value,
+        echo: document.getElementById('echo').value,
+        distortion: document.getElementById('distortion').value,
+        preset: document.getElementById('presets').value
+      };
+    }
+
+    window.onload = function() {
+      const savedSettings = JSON.parse(localStorage.getItem('dspSettings'));
+      if (savedSettings) {
+        document.getElementById('volume').value = savedSettings.volume;
+        document.getElementById('bass').value = savedSettings.bass;
+        document.getElementById('mid').value = savedSettings.mid;
+        document.getElementById('treble').value = savedSettings.treble;
+        document.getElementById('balance').value = savedSettings.balance;
+        document.getElementById('reverb').value = savedSettings.reverb;
+        document.getElementById('echo').value = savedSettings.echo;
+        document.getElementById('distortion').value = savedSettings.distortion;
+        document.getElementById('presets').value = savedSettings.preset;
+      }
+      drawGraph();
+    };
+  </script>
+</body>
+</html>

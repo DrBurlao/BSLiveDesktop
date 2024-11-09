@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l;'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MBMCQ95B');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6MVWV0R1H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y6MVWV0R1H');
+    </script>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <title>BurlaPong - BurlaSoft</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #34495e;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            background-color: #2c3e50;
+            display: block;
+            margin: 20px auto;
+            border: 3px solid white;
+            border-radius: 5px;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        .scores {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .instructions {
+            margin-bottom: 20px;
+        }
+        .speed-indicator {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .pause-button, .start-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .pause-button:hover, .start-button:hover {
+            background-color: #c0392b;
+        }
+        .progress-bar {
+            height: 20px;
+            width: 100%;
+            background-color: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress {
+            height: 100%;
+            background-color: #e74c3c;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+        <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MBMCQ95B"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div class="instructions">
+        <h1>BurlaPong!</h1>
+        <p>Use <strong>W</strong> and <strong>S</strong> or the <strong>arrows</strong> to move up and down.</p>
+        <p>Change the number of points to win and other options.</p>
+    </div>
+    <div class="controls">
+        <label>
+            Points to win:
+            <select id="winPoints" onchange="changeWinPoints()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+            </select>
+        </label>
+        <label>
+            Dificulty:
+            <select id="difficulty" onchange="changeDifficulty()">
+                <option value="1">Easy</option>
+                <option value="2">Normal</option>
+                <option value="3">Hard</option>
+            </select>
+        </label>
+        <label>
+            Game speed:
+            <select id="gameSpeed" onchange="changeGameSpeed()">
+                <option value="1">Normal</option>
+                <option value="1.5">Faster</option>
+                <option value="2">Fastest</option>
+            </select>
+        </label>
+        <button class="start-button" onclick="startGame()">Start Game</button>
+    </div>
+    <div class="scores">
+        Points - Player: <span id="playerScore">0</span>, CPU: <span id="machineScore">0</span>
+    </div>
+    <div class="progress-bar">
+        <div class="progress" id="progressBar" style="width: 0;"></div>
+    </div>
+    <canvas id="pong" width="600" height="400" hidden></canvas>
+    <button class="pause-button" onclick="togglePause()" hidden>Pause</button>
+    
+    <script>
+        const canvas = document.getElementById('pong');
+        const context = canvas.getContext('2d');
+
+        const paddleWidth = 10;
+        const paddleHeight = 80;
+        const ballRadius = 10;
+
+        let leftPaddleY = (canvas.height - paddleHeight) / 2;
+        let rightPaddleY = (canvas.height - paddleHeight) / 2;
+
+        let ballSpeedMultiplier = 1;
+        let initialBallSpeed = { dx: 3 * ballSpeedMultiplier, dy: 3 * ballSpeedMultiplier };
+        let ballDX = initialBallSpeed.dx;
+        let ballDY = initialBallSpeed.dy;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+
+        let playerScore = 0;
+        let machineScore = 0;
+
+        let winPoints = 5; // Puntos necesarios para ganar
+        const keys = {};
+
+        let machineSpeed = 3; // Velocidad predeterminada de la máquina
+        let isPaused = false;
+        let gameInProgress = false;
+
+        const sounds = {
+            wallHit: new Audio('https://www.soundjay.com/button/sounds/button-10.mp3'),
+            paddleHit: new Audio('https://www.soundjay.com/button/sounds/button-20.mp3'),
+            pointScored: new Audio('https://www.soundjay.com/button/sounds/button-15.mp3'),
+            gameEnd: new Audio('https://www.soundjay.com/button/sounds/button-09.mp3')
+        };
+
+        function togglePause() {
+            isPaused = !isPaused;
+            document.querySelector('.pause-button').textContent = isPaused ? 'Resume' : 'Pause';
+            if (!isPaused && gameInProgress) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        function changeDifficulty() {
+            const difficulty = document.getElementById('difficulty').value;
+            switch (difficulty) {
+                case '1':
+                    machineSpeed = 2;
+                    break;
+                case '2':
+                    machineSpeed = 3;
+                    break;
+                case '3':
+                    machineSpeed = 4;
+                    break;
+            }
+        }
+
+        function changeGameSpeed() {
+            const gameSpeed = parseFloat(document.getElementById('gameSpeed').value);
+            ballSpeedMultiplier = gameSpeed;
+            initialBallSpeed = { dx: 3 * ballSpeedMultiplier, dy: 3 * ballSpeedMultiplier };
+            document.getElementById('ballSpeed').textContent = (3 * ballSpeedMultiplier).toFixed(1);
+        }
+
+        function changeWinPoints() {
+            winPoints = parseInt(document.getElementById('winPoints').value);
+        }
+
+        function drawPaddle(x, y, color) {
+            context.fillStyle = color;
+            context.fillRect(x, y, paddleWidth, paddleHeight);
+        }
+
+        function drawBall(x, y) {
+            context.beginPath();
+            context.arc(x, y, ballRadius, 0, Math.PI * 2);
+            context.fillStyle = '#f1c40f'; // Amarillo
+            context.fill();
+            context.closePath();
+        }
+
+        function drawScores() {
+            context.font = '16px Arial';
+            context.fillStyle = 'white';
+            context.fillText(`Player: ${playerScore}`, 20, 20);
+            context.fillText(`CPU: ${machineScore}`, canvas.width - 110, 20);
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById("progressBar");
+            const progress = Math.min((playerScore / winPoints) * 100, 100);
+            progressBar.style.width = progress + '%';
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballDX = initialBallSpeed.dx * (Math.random() > 0.5 ? 1 : -1);
+            ballDY = initialBallSpeed.dy * (Math.random() > 0.5 ? 1 : -1);
+        }
+
+        function update() {
+            if (isPaused || !gameInProgress) return;
+
+            let paddleSpeed = 5; // Velocidad base del paddle
+            if (keys['w'] || keys['arrowup']) {
+                paddleSpeed = 7; // Aumenta la velocidad con presión sostenida
+                leftPaddleY -= paddleSpeed;
+            }
+            if (keys['s'] || keys['arrowdown']) {
+                leftPaddleY += paddleSpeed;
+            }
+
+            const targetY = ballY - paddleHeight / 2;
+            const error = Math.random() * 20 - 10;
+
+            if (rightPaddleY < targetY + error && rightPaddleY < canvas.height - paddleHeight) {
+                rightPaddleY += machineSpeed;
+            }
+            if (rightPaddleY > targetY + error && rightPaddleY > 0) {
+                rightPaddleY -= machineSpeed;
+            }
+
+            ballX += ballDX;
+            ballY += ballDY;
+
+            if (ballY <= ballRadius || ballY >= canvas.height - ballRadius) {
+                ballDY *= -1;
+                sounds.wallHit.play();
+            }
+
+            if ((ballX - ballRadius < paddleWidth && ballY >= leftPaddleY && ballY <= leftPaddleY + paddleHeight) ||
+                (ballX + ballRadius > canvas.width - paddleWidth && ballY >= rightPaddleY && ballY <= rightPaddleY + paddleHeight)) {
+                ballDX *= -1;
+                ballDX *= 1.05;
+                ballDY *= (Math.random() > 0.5 ? 1 : -1); // Varía la dirección para hacerlo menos predecible
+                sounds.paddleHit.play();
+            }
+
+            if (ballX < 0) {
+                machineScore++;
+                resetBall();
+                document.getElementById("machineScore").textContent = machineScore;
+                sounds.pointScored.play();
+            }
+
+            if (ballX > canvas.width) {
+                playerScore++;
+                resetBall();
+                document.getElementById("playerScore").textContent = playerScore;
+                sounds.pointScored.play();
+                updateProgress();
+            }
+
+            if (machineScore >= winPoints || playerScore >= winPoints) {
+                const winner = playerScore >= winPoints ? "Player" : "CPU";
+                alert(`Juego terminado. Ganador: ${winner}`);
+                gameInProgress = false; // Detener el juego
+                document.querySelector('.pause-button').hidden = true; // Ocultar el botón de pausa
+                machineScore = 0;
+                playerScore = 0;
+                updateProgress(); 
+            }
+        }
+
+        function draw() {
+            if (!gameInProgress) return;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawPaddle(0, leftPaddleY, '#e74c3c'); // Paddle izquierdo (jugador)
+            drawPaddle(canvas.width - paddleWidth, rightPaddleY, '#3498db'); // Paddle derecho (máquina)
+            drawBall(ballX, ballY);
+            drawScores(); 
+        }
+
+        function gameLoop() {
+            if (!isPaused && gameInProgress) {
+                update();
+                draw();
+                requestAnimationFrame(gameLoop); // Ciclo de juego continuo
+            }
+        }
+
+        function startGame() {
+            gameInProgress = true; // Iniciar el juego
+            document.getElementById("playerScore").textContent = "0";
+            document.getElementById("machineScore").textContent = "0";
+            resetBall(); // Reubicar la pelota al centro
+            document.getElementById("pong").removeAttribute("hidden"); // Mostrar el canvas
+            document.querySelector('.pause-button').hidden = false; // Mostrar el botón de pausa
+            requestAnimationFrame(gameLoop); // Comenzar el ciclo de juego
+        }
+    </script>
+</body>
+</html>

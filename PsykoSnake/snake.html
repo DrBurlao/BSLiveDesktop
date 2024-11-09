@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            background-color: #1e1e1e;
+            display: block;
+            border: 1px solid #333;
+        }
+        .button-container {
+            position: absolute;
+            bottom: 50px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .button {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #555;
+        }
+        #controls {
+            position: absolute;
+            top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .select {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+        }
+        #info div {
+            margin: 5px 0;
+        }
+        #splashScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            display: none;
+        }
+        #rank {
+            margin-top: 20px;
+        }
+        #nameInput {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #pauseButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="controls">
+        <select id="difficulty" class="select">
+            <option value="veryEasy">Rat</option>
+            <option value="easy">Monkey</option>
+            <option value="normal">Human</option>
+            <option value="hard">IA</option>
+        </select>
+        <button class="select" onclick="startGame()">Start</button>
+    </div>
+    <div class="button-container">
+        <button class="button" id="leftButton">←</button>
+		<button class="button" id="upButton">↑</button>
+        <button class="button" id="downButton">↓</button>
+        <button class="button" id="rightButton">→</button>
+
+    </div>
+    <div id="info">
+        <div>Level: <span id="level">1</span></div>
+        <div>Score: <span id="score">0</span></div>
+        <div>Lives: <span id="lives">3</span></div>
+    </div>
+    <div id="splashScreen">
+        <div>Game Over</div>
+        <div>Your Score: <span id="finalScore">0</span></div>
+        <div>
+            <label for="nameInput">Enter your name:</label>
+            <input type="text" id="nameInput" class="select">
+        </div>
+        <div>Rank: <span id="rank">0</span></div>
+        <button class="select" onclick="saveScore()">Save Score</button>
+        <button class="select" onclick="restartGame()">Restart Game</button>
+    </div>
+    <button id="pauseButton" class="select" onclick="togglePause()">Pause</button>
+    <script src="snake.js"></script>
+</body>
+</html>

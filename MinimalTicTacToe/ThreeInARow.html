@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l;'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MBMCQ95B');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6MVWV0R1H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y6MVWV0R1H');
+    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Minimal Tic Tac Toe</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      max-width: 320px;
+      padding: 10px;
+      background-color: #3a2e32;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(3, 80px);
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ddd;
+      cursor: pointer;
+      font-size: 2em;
+      transition: background-color 0.3s;
+    }
+
+    .cell:hover {
+      background-color: #ccc;
+    }
+
+    .winner {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+
+    .restart-btn, .config-btn {
+      width: 100%;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .restart-btn:hover, .config-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .config-panel {
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+      background-color: #cccccc;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .config-panel input {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+
+    .config-panel label {
+      text-align: left;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MBMCQ95B"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+  <div class="container">
+    <button class="config-btn" onclick="toggleConfigPanel()">Configuración</button>
+    <div class="config-panel" id="config-panel">
+      <div>
+        <label for="difficulty">Seleccionar Dificultad:</label>
+        <select id="difficulty" class="difficulty-selector">
+          <option value="easy">Fácil</option>
+          <option value="medium">Medio</option>
+          <option value="hard">Difícil</option>
+        </select>
+      </div>
+      <div>
+        <label for="board-color">Color del Tablero:</label>
+        <input type="color" id="board-color" name="board-color" value="#ddd" onchange="changeBoardColor(this.value)">
+      </div>
+      <div>
+        <label for="x-color">Color de X:</label>
+        <input type="color" id="x-color" name="x-color" value="#000000" onchange="changeXColor(this.value)">
+      </div>
+      <div>
+        <label for="o-color">Color de O:</label>
+        <input type="color" id="o-color" name="o-color" value="#000000" onchange="changeOColor(this.value)">
+      </div>
+    </div>
+    <div class="board"></div>
+    <div class="winner"></div>
+    <button class="restart-btn" onclick="startGame()">Iniciar Juego</button>
+  </div>
+
+  <script>
+    const board = document.querySelector('.board');
+    const winnerDisplay = document.querySelector('.winner');
+    let currentPlayer = 'X';
+    let winner = null;
+    let difficulty = 'easy';
+    const cells = [];
+    let boardColor = '#ddd';
+    let xColor = '#000000';
+    let oColor = '#000000';
+
+    function toggleConfigPanel() {
+      const configPanel = document.getElementById('config-panel');
+      configPanel.style.display = configPanel.style.display === 'none' || configPanel.style.display === '' ? 'flex' : 'none';
+    }
+
+    // Initialize the board
+    function initBoard() {
+      board.innerHTML = '';
+      cells.length = 0;
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.index = i;
+        cell.addEventListener('click', handleCellClick);
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    // Handle cell click
+    function handleCellClick(event) {
+      const cell = event.target;
+      if (cell.textContent === '' && !winner) {
+        cell.textContent = currentPlayer;
+        cell.style.color = currentPlayer === 'X' ? xColor : oColor;
+        if (checkWin()) {
+          winner = currentPlayer;
+          winnerDisplay.textContent = `${winner} gana!`;
+          highlightWinningCells();
+        } else if (checkDraw()) {
+          winnerDisplay.textContent = `¡Es un empate!`;
+        } else {
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          if (currentPlayer === 'O') {
+            setTimeout(makeCPUMove, 500); // Delay CPU move for better visualization
+          }
+        }
+      }
+    }
+
+    // Make CPU move based on difficulty
+    function makeCPUMove() {
+      let selectedCell;
+      if (difficulty === 'easy') {
+        selectedCell = getRandomMove();
+      } else if (difficulty === 'medium') {
+        selectedCell = getWinningMove() || getBlockingMove() || getRandomMove();
+      } else {
+        selectedCell = getWinningMove() || getOptimalMove();
+      }
+      selectedCell.textContent = currentPlayer;
+      selectedCell.style.color = oColor;
+      if (checkWin()) {
+        winner = currentPlayer;
+        winnerDisplay.textContent = `${winner} gana!`;
+        highlightWinningCells();
+      } else if (checkDraw()) {
+        winnerDisplay.textContent = `¡Es un empate!`;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      }
+    }
+
+    // Get random move
+    function getRandomMove() {
+      const availableCells = cells.filter(cell => cell.textContent === '');
+      const randomIndex = Math.floor(Math.random() * availableCells.length);
+      return availableCells[randomIndex];
+    }
+
+    // Get winning move
+    function getWinningMove() {
+      for (let condition of winConditions) {
+        const [a, b, c] = condition;
+        const values = [cells[a].textContent, cells[b].textContent, cells[c].textContent];
+        if (values.filter(value => value === currentPlayer).length === 2 && values.includes('')) {
+          return cells[condition[values.indexOf('')]];
+        }
+      }
+      return null;
+    }
+
+    // Get blocking move
+    function getBlockingMove() {
+      const opponent = currentPlayer === 'X' ? 'O' : 'X';
+      for (let condition of winConditions) {
+        const [a, b, c] = condition;
+        const values = [cells[a].textContent, cells[b].textContent, cells[c].textContent];
+        if (values.filter(value => value === opponent).length === 2 && values.includes('')) {
+          return cells[condition[values.indexOf('')]];
+        }
+      }
+      return null;
+    }
+
+    // Get optimal move using Minimax algorithm with alpha-beta pruning
+    function getOptimalMove() {
+      let bestMove;
+      let bestScore = -Infinity;
+      for (let cell of cells.filter(cell => cell.textContent === '')) {
+        cell.textContent = currentPlayer;
+        let score = minimax(cells, 0, false, -Infinity, Infinity);
+        cell.textContent = '';
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = cell;
+        }
+      }
+      return bestMove;
+    }
+
+    const scores = {
+      X: 1,
+      O: -1,
+      draw: 0
+    };
+
+    function minimax(cells, depth, isMaximizing, alpha, beta) {
+      let result = evaluateBoard();
+      if (result !== null) {
+        return scores[result];
+      }
+
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+        for (let cell of cells.filter(cell => cell.textContent === '')) {
+          cell.textContent = 'X';
+          let score = minimax(cells, depth + 1, false, alpha, beta);
+          cell.textContent = '';
+          bestScore = Math.max(score, bestScore);
+          alpha = Math.max(alpha, bestScore);
+          if (beta <= alpha) {
+            break;
+          }
+        }
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+        for (let cell of cells.filter(cell => cell.textContent === '')) {
+          cell.textContent = 'O';
+          let score = minimax(cells, depth + 1, true, alpha, beta);
+          cell.textContent = '';
+          bestScore = Math.min(score, bestScore);
+          beta = Math.min(beta, bestScore);
+          if (beta <= alpha) {
+            break;
+          }
+        }
+        return bestScore;
+      }
+    }
+
+    function evaluateBoard() {
+      if (checkWin()) {
+        return currentPlayer;
+      } else if (checkDraw()) {
+        return 'draw';
+      }
+      return null;
+    }
+
+    // Check for a win
+    const winConditions = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    function checkWin() {
+      return winConditions.some(condition => {
+        const [a, b, c] = condition;
+        return cells[a].textContent === currentPlayer &&
+          cells[b].textContent === currentPlayer &&
+          cells[c].textContent === currentPlayer;
+      });
+    }
+
+    // Check for a draw
+    function checkDraw() {
+      return cells.every(cell => cell.textContent !== '');
+    }
+
+    // Highlight winning cells
+    function highlightWinningCells() {
+      winConditions.forEach(condition => {
+        const [a, b, c] = condition;
+        if (cells[a].textContent === currentPlayer &&
+            cells[b].textContent === currentPlayer &&
+            cells[c].textContent === currentPlayer) {
+          cells[a].style.backgroundColor = '#4CAF50';
+          cells[b].style.backgroundColor = '#4CAF50';
+          cells[c].style.backgroundColor = '#4CAF50';
+        }
+      });
+    }
+
+    // Start game
+    function startGame() {
+      winner = null;
+      currentPlayer = 'X';
+      winnerDisplay.textContent = '';
+      initBoard();
+      changeDifficulty(document.getElementById('difficulty').value);
+      toggleConfigPanel();
+    }
+
+    // Change difficulty
+    function changeDifficulty(newDifficulty) {
+      difficulty = newDifficulty;
+    }
+
+    // Change board color
+    function changeBoardColor(newColor) {
+      boardColor = newColor;
+      cells.forEach(cell => {
+        if (cell.textContent === '') {
+          cell.style.backgroundColor = newColor;
+        }
+      });
+    }
+
+    // Change X color
+    function changeXColor(newColor) {
+      xColor = newColor;
+    }
+
+    // Change O color
+    function changeOColor(newColor) {
+      oColor = newColor;
+    }
+
+    // Initialize the board on page load
+    window.onload = startGame;
+  </script>
+</body>
+</html>

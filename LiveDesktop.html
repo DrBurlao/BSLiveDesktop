@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+        <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l;'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MBMCQ95B');</script>
+    <!-- End Google Tag Manager -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6MVWV0R1H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Y6MVWV0R1H');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BurlaSoft - LiveDesktop 4 Android</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Estilos para el iframe de la tienda */
+        #shop-frame {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999; /* Asegura que esté por encima del escritorio */
+            border: none;
+            width: 80%; /* Ajusta el tamaño según sea necesario */
+            height: 80%;
+            max-width: 800px; /* Tamaño máximo */
+            max-height: 600px;
+            background-color: white; /* Fondo blanco para el contraste */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); /* Sombra para resaltar */
+            display: none; /* Por defecto oculto */
+        }
+
+        /* Estilos para el área de escritorio */
+        #desktop {
+            border: 2px dashed #00000000;
+            min-height: 300px;
+            position: absolute;
+        }
+
+        /* Estilos para resaltar el área de escritorio al arrastrar */
+        #desktop.dragover {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-color: #00000000;
+        }
+
+        /* Estilos para el icono del menú */
+        #main-menu-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            cursor: pointer;
+            z-index: 9998; /* Asegura que esté debajo del iframe de la tienda */
+        }
+
+        #main-menu-icon img {
+            width: 40px;
+            height: auto;
+        }
+
+        /* Estilos para el menú principal */
+        #main-menu {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            z-index: 9998; /* Asegura que esté debajo del iframe de la tienda */
+            background-color: #ffffff;
+            border: 1px solid #ffffff;
+            padding: 0px;
+            display: none; /* Oculto por defecto */
+        }
+
+        /* Estilos para los elementos del menú */
+        #main-menu ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #main-menu ul li {
+            padding: 5px 0;
+            cursor: pointer;
+        }
+
+        #main-menu ul li:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Estilos para el iframe del menú */
+        #main-menu iframe {
+            width: 270px;
+            height: 450px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+        <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MBMCQ95B"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="desktop" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+        <div id="context-menu">
+            <ul>
+                <li id="add-url">Agregar URL</li>
+                <li id="edit-url">Editar URL</li>
+                <li id="rename">Renombrar</li>
+                <li id="delete">Eliminar</li>
+                <li id="properties">Propiedades</li>
+                <li id="add-widget">Agregar Widget</li>
+                <li id="close-widget">Cerrar Widget</li>
+                <li id="copy-url">Copiar URL</li>
+                <li id="paste-url">Pegar URL</li>
+                <li id="create-folder">Crear Carpeta</li>
+                <!-- Botón para abrir la tienda -->
+                <li id="open-shop">Abrir Tienda</li>
+            </ul>
+        </div>
+        <div id="taskbar">
+            <div id="taskbar-icons"></div>
+            <div id="clock"></div>
+        </div>
+        <!-- Icono del menú principal -->
+        <div id="main-menu-icon">
+            <img src="icon.png" alt="Start">
+        </div>
+        <!-- Menú principal -->
+        <div id="main-menu">
+            <iframe src="menu.html" frameborder="0"></iframe>
+        </div>
+    </div>
+    <input type="file" id="file-selector" style="display: none;">
+    <input type="file" id="background-selector" style="display: none;">
+    <button id="change-background-btn">Cambiar Fondo</button>
+    <button id="change-color-btn">Cambiar Color</button>
+    <button id="reset-btn">Reiniciar</button>
+    <button id="import-data-btn">Importar Datos</button>
+    <button id="export-data-btn">Exportar Datos</button>
+    <input type="file" id="import-file-selector" style="display: none;">
+    <iframe id="shop-frame" src="shop.html"></iframe>
+    <script src="scripts.js"></script>
+    <script>
+        // Función para abrir y cerrar el menú principal
+        document.getElementById('main-menu-icon').addEventListener('click', function() {
+            const mainMenu = document.getElementById('main-menu');
+            mainMenu.style.display = (mainMenu.style.display === 'block') ? 'none' : 'block';
+        });
+
+        // Función para abrir la tienda
+        document.getElementById('open-shop').addEventListener('click', function() {
+            document.getElementById('shop-frame').style.display = 'block';
+        });
+
+        // Función para cerrar la tienda
+        function cerrarTienda() {
+            document.getElementById('shop-frame').style.display = 'none';
+        }
+
+        // Escuchar mensajes del iframe de la tienda
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            if (data.icon && data.app) {
+                addIcon(data.icon, data.app);
+            }
+        });
+
+        // Función para manejar el evento de arrastre sobre el escritorio
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+            document.getElementById('desktop').classList.add('dragover');
+        }
+
+        // Función para manejar el evento de soltar sobre el escritorio
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('desktop').classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const name = file.name;
+                addIcon(url, name);
+            }
+        }
+    </script>
+</body>
+</html>
